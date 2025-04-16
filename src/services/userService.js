@@ -55,6 +55,24 @@ export const createUser = async (userData) => {
       throw error;
     }
   };
+
+  // 🔹 Obtener un usuario por ID
+  export const getUsersByCategory = async (categoryId) => {
+    try {
+      const response = await fetch(`${API_URL}/Category/${categoryId}`);
+  
+      if (!response.ok) {
+        throw new Error(`Error al obtener usuarios por categoria`);
+      }
+      
+      const data =  await response.json();
+console.log(data);
+      return data;
+    } catch (error) {
+      console.error("Error en getUsersByCategory:", error);
+      throw error;
+    }
+  };
   
   // 🔹 Actualizar usuario (Editar)
   export const updateUser = async (id, userData) => {

@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form"; // Importamos react-hook-form
 import {
-  createUser,
-  updateUser,
-  getUserById,
-} from "../../services/userService";
+  createTournament,
+  updateTournament,
+  getTournamentById,
+} from "../../services/tournamentsService";
 import { getCategories } from "../../services/categoriesService";
-import { getProfiles } from "../../services/profilesService";
+import { getLocations } from "../../services/locationsService";
 import { IconButton, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import {
@@ -26,11 +26,12 @@ import {
   FormHelperText,
 } from "@mui/material";
 
-export const UsersAdd = () => {
+export const TournamentsAdd = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [categories, setCategories] = useState([]);
-  const [profiles, setProfiles] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [Status, setStatus] = useState();
   const isEdit = id !== "new" && id !== undefined;
 
   // Inicializamos useForm
@@ -47,51 +48,55 @@ export const UsersAdd = () => {
   const onSubmit = async (data, event) => {
     event?.preventDefault(); // Evita recargar la página
 
-    const user = {
+    const obj = {
       id: id,
-      name: data.name,
-      lastname: data.lastName,
-      phone1: data.phone || "",
-      phone2: "",
-      email: data.email,
-      image: "",
-      profileid: data.profileId,
+      description: data.description,
+      closeDate: data.closeDate ? new Date(data.closeDate).toISOString() : null,
+      initialDate: data.initialDate
+        ? new Date(data.initialDate).toISOString()
+        : null,
+      endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
+      locationId: data.locationId,
       categoryId: data.categoryId,
-      birthdate: data.birthDate ? new Date(data.birthDate).toISOString() : null,
-      active: data.active || false, // El valor de "active" es false por defecto
+      status: isEdit ? Status : 0,
     };
+
+    console.log("onSubmit", obj);
 
     try {
       if (isEdit) {
-        await updateUser(id, user);
+        await updateTournament(id, obj);
       } else {
-        await createUser(user);
+        await createTournament(obj);
       }
-      navigate("/users");
+      navigate("/tournaments");
     } catch (error) {
-      console.error("Error al guardar el usuario:", error);
+      console.error("Error al guardar el torneo:", error);
     }
   };
 
   const handleBackClick = () => {
-    navigate("/users");
+    navigate("/tournaments");
   };
 
   useEffect(() => {
     getCategories().then(setCategories);
-    getProfiles().then(setProfiles);
+    getLocations().then(setLocations);
     if (isEdit) {
-      getUserById(id).then((user) => {
+      getTournamentById(id).then((data) => {
+        console.log("status", data.status);
+        console.log("statusName", data.statusName);
         reset({
-          name: user.name,
-          lastName: user.lastName,
-          phone: user.phone1,
-          email: user.email,
-          birthDate: user.birthDate?.split("T")[0], // Para formato 'YYYY-MM-DD'
-          categoryId: user.categoryId,
-          active: user.active || false, // Se asegura que el valor de "active" se pase correctamente
-          profileId: user.profileId,
+          description: data.description,
+          closeDate: data.closeDate?.split("T")[0],
+          initialDate: data.initialDate?.split("T")[0],
+          endDate: data.endDate?.split("T")[0],
+          locationId: data.locationId,
+          categoryId: data.categoryId,
+          status: data.status,
         });
+
+        setStatus(data.status);
       });
     }
   }, [id, reset]);
@@ -103,7 +108,7 @@ export const UsersAdd = () => {
         sx={{ padding: 3, marginTop: 4, position: "relative" }}
       >
         <Typography variant="h5" gutterBottom>
-          {isEdit ? "Edición de Jugador" : "Nuevo Jugador"}
+          {isEdit ? "Edición de Torneo" : "Nuevo Torneo"}
         </Typography>
 
         <Box sx={{ position: "absolute", top: 10, right: 10 }}>
@@ -117,56 +122,47 @@ export const UsersAdd = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                value={watch("name") || ""}
-                label="Nombre"
-                {...register("name", { required: "El nombre es obligatorio" })}
-                error={!!errors.name}
-                helperText={errors.name?.message}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                value={watch("lastName") || ""}
-                label="Apellido"
-                {...register("lastName", {
-                  required: "El apellido es obligatorio",
+                value={watch("description") || ""}
+                label="Description"
+                {...register("description", {
+                  required: "La descripción es obligatoria",
                 })}
-                error={!!errors.lastname}
-                helperText={errors.lastname?.message}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email"
-                value={watch("email") || ""}
-                {...register("email", {
-                  // required: "El email es obligatorio",
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Formato de email inválido",
-                  },
-                })}
-                error={!!errors.email}
-                helperText={errors.email?.message}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Teléfono"
-                value={watch("phone") || ""}
-                {...register("phone")}
+                error={!!errors.description}
+                helperText={errors.description?.message}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
-                id="date"
-                label="Fecha de Nacimiento"
+                id="closeDate"
+                label="Cierre de inscripción"
                 type="date"
-                value={watch("birthDate") || ""}
-                {...register("birthDate")}
+                value={watch("closeDate") || ""}
+                {...register("closeDate")}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                id="initialDate"
+                label="Inicio"
+                type="date"
+                value={watch("initialDate") || ""}
+                {...register("initialDate")}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <TextField
+                id="endDate"
+                label="Fin"
+                type="date"
+                value={watch("endDate") || ""}
+                {...register("endDate")}
                 InputLabelProps={{
                   shrink: true,
                 }}
@@ -195,39 +191,26 @@ export const UsersAdd = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={5}>
-              <FormControl fullWidth error={!!errors.profileId}>
-                <InputLabel id="profile-label">Perfil</InputLabel>
+              <FormControl fullWidth error={!!errors.locationId}>
+                <InputLabel id="location-label">Sede</InputLabel>
                 <Select
-                  labelId="profile-label"
-                  {...register("profileId", {
-                    required: "Selecciona el perfil",
+                  labelId="location-label"
+                  {...register("locationId", {
+                    required: "Selecciona la sede",
                   })}
-                  onChange={(e) => setValue("profileId", e.target.value)} // Asegura la actualización
-                  value={watch("profileId") || ""} // Evita valores vacíos
+                  onChange={(e) => setValue("locationId", e.target.value)} // Asegura la actualización
+                  value={watch("locationId") || ""} // Evita valores vacíos
                 >
-                  {profiles.map((option) => (
+                  {locations.map((option) => (
                     <MenuItem key={option.id} value={option.id}>
                       {option.name}
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.profileId && (
-                  <FormHelperText>{errors.profileId.message}</FormHelperText>
+                {errors.locationId && (
+                  <FormHelperText>{errors.locationId.message}</FormHelperText>
                 )}
               </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    {...register("active")}
-                    checked={watch("active") || true} // Usamos watch para obtener el valor
-                    onChange={(e) => setValue("active", e.target.checked)} // Actualiza el estado en react-hook-form
-                    name="active"
-                  />
-                }
-                label="Activo"
-              />
             </Grid>
             <Grid item xs={12}>
               <Button

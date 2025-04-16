@@ -54,6 +54,12 @@ export const Navbar = () => {
           <MenuItem onClick={() => handleNavigation("/categories")}>
             Categorías
           </MenuItem>
+          <MenuItem onClick={() => handleNavigation("/registrations")}>
+            Inscripciones
+          </MenuItem>
+          <MenuItem onClick={() => handleNavigation("/tournaments")}>
+            Torneos
+          </MenuItem>
           <MenuItem onClick={() => handleMenuClose}>Settings</MenuItem>
         </Menu>
 
