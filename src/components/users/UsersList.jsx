@@ -85,14 +85,31 @@ export const UsersList = () => {
       ),
     },
 
-    { field: "name", headerName: "Nombre", flex: 1 },
-    { field: "lastName", headerName: "Apellido", flex: 1 },
-    { field: "phone1", headerName: "Teléfono", flex: 1 },
-    { field: "email", headerName: "Email", flex: 1 },
+    {
+      field: "name",
+      headerName: "Nombre",
+      flex: 1,
+    },
+    {
+      field: "lastName",
+      headerName: "Apellido",
+      flex: 1,
+    },
+    {
+      field: "phone1",
+      headerName: "Teléfono",
+      flex: 1,
+    },
+    {
+      field: "email",
+      headerName: "Email",
+      flex: 1,
+    },
     {
       field: "active",
       headerName: "Activo",
       flex: 1,
+      align: "center",
       renderCell: (params) =>
         params.value ? (
           <CheckCircleIcon sx={{ color: green[500] }} />
@@ -129,7 +146,7 @@ export const UsersList = () => {
         sx={{ padding: 3, marginTop: 4, position: "relative" }}
       >
         <Typography variant="h5" gutterBottom>
-          Jugadores
+          Usuarios
         </Typography>
 
         <div style={{ height: 400, width: "100%" }}>

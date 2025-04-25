@@ -35,6 +35,22 @@ export const getRegistrations = async (tournamentId) => {
       throw error;
     }
   };
+
+  export const  getUsersRegistrated = async ( tournamentId) => {
+    try {
+      const response = await fetch(`${API_URL}/${tournamentId}`);
+  
+      if (!response.ok) {
+        throw new Error(`Error al obtener los usuarios inscriptos`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Error en getUsersRegistrated:", error);
+      throw error;
+    }
+  };
+  
   
 
   // 🔹 Eliminar torneo

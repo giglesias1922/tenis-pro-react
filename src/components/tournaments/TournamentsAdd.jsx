@@ -59,6 +59,7 @@ export const TournamentsAdd = () => {
       locationId: data.locationId,
       categoryId: data.categoryId,
       status: isEdit ? Status : 0,
+      tournamentType: data.tournamentType,
     };
 
     console.log("onSubmit", obj);
@@ -79,13 +80,16 @@ export const TournamentsAdd = () => {
     navigate("/tournaments");
   };
 
+  const tournamentTypes = [
+    { value: 0, label: "Single" },
+    { value: 1, label: "Double" },
+  ];
+
   useEffect(() => {
     getCategories().then(setCategories);
     getLocations().then(setLocations);
     if (isEdit) {
       getTournamentById(id).then((data) => {
-        console.log("status", data.status);
-        console.log("statusName", data.statusName);
         reset({
           description: data.description,
           closeDate: data.closeDate?.split("T")[0],
@@ -94,6 +98,7 @@ export const TournamentsAdd = () => {
           locationId: data.locationId,
           categoryId: data.categoryId,
           status: data.status,
+          tournamentType: data.tournamentType,
         });
 
         setStatus(data.status);
@@ -168,6 +173,33 @@ export const TournamentsAdd = () => {
                 }}
               />
             </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth error={!!errors.tournamentType}>
+                <InputLabel id="tournament-type-label">
+                  Tipo de Torneo
+                </InputLabel>
+                <Select
+                  labelId="tournament-type-label"
+                  {...register("tournamentType", {
+                    required: "Selecciona un tipo de torneo",
+                  })}
+                  onChange={(e) => setValue("tournamentType", e.target.value)}
+                  value={watch("tournamentType") ?? ""}
+                >
+                  {tournamentTypes.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.tournamentType && (
+                  <FormHelperText>
+                    {errors.tournamentType.message}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </Grid>
+
             <Grid item xs={12} sm={3}>
               <FormControl fullWidth error={!!errors.categoryId}>
                 <InputLabel id="category-label">Categoría</InputLabel>

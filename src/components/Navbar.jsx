@@ -49,18 +49,20 @@ export const Navbar = () => {
         >
           <MenuItem onClick={() => handleNavigation("/")}>Home</MenuItem>
           <MenuItem onClick={() => handleNavigation("/users")}>
-            Jugadores
+            Usuarios
           </MenuItem>
           <MenuItem onClick={() => handleNavigation("/categories")}>
             Categorías
           </MenuItem>
-          <MenuItem onClick={() => handleNavigation("/registrations")}>
-            Inscripciones
-          </MenuItem>
           <MenuItem onClick={() => handleNavigation("/tournaments")}>
             Torneos
           </MenuItem>
-          <MenuItem onClick={() => handleMenuClose}>Settings</MenuItem>
+          <MenuItem onClick={() => handleNavigation("/registrations")}>
+            Inscripciones
+          </MenuItem>
+          <MenuItem onClick={() => handleNavigation("/matches")}>
+            Partidos
+          </MenuItem>
         </Menu>
 
         {/* Espacio flexible para centrar el título */}

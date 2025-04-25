@@ -3,8 +3,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { IconButton, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { getCategories } from "../../services/categoriesService";
-import { getLocations } from "../../services/locationsService";
+import { getMatches } from "../../services/matchesService.js";
 import {
   Fab,
   Container,
@@ -23,43 +22,35 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
-import {
-  getTournaments,
-  deleteTournament,
-} from "../../services/tournamentsService.js";
 import { Visibility } from "@mui/icons-material";
 
-export const TournamentsList = () => {
+export const MatchesList = () => {
   const [data, setdata] = useState([]);
   const navigate = useNavigate();
   const [openConfirm, setOpenConfirm] = useState(false);
-  const [selectedTournamentId, setSelectedTournamentId] = useState(null);
-  const [filterCategoryId, setFilterCategoryId] = useState(null);
-  const [filterLocationId, setFilterLocationId] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [locations, setLocations] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
 
   const handleAddClick = () => {
-    navigate("/tournaments/new");
+    navigate("/matches/new");
   };
 
   const handleEditClick = (id) => {
-    navigate(`/tournaments/${id}`);
+    navigate(`/matches/${id}`);
   };
 
   const handleDeleteClick = (id) => {
-    setSelectedTournamentId(id);
+    setSelectedId(id);
     setOpenConfirm(true);
   };
 
   const handleConfirmDelete = async () => {
     try {
-      await deleteTournament(selectedTournamentId);
+      await deletematch(selectedId);
       // Recargar los datos después de la eliminación
-      const updatedData = await getTournaments();
+      const updatedData = await getMatches();
       setdata(updatedData);
     } catch (error) {
-      console.error("Error al eliminar el torneo:", error);
+      console.error("Error al eliminar el match:", error);
     } finally {
       setOpenConfirm(false);
       setSelectedTournamentId(null);
@@ -68,16 +59,11 @@ export const TournamentsList = () => {
 
   const handleCancelDelete = () => {
     setOpenConfirm(false);
-    setSelectedTournamentId(null);
+    setSelectedId(null);
   };
 
   useEffect(() => {
-    getCategories().then(setCategories);
-    getLocations().then(setLocations);
-    getTournaments().then((data) => {
-      console.log(data);
-      setdata(data);
-    });
+    getMatches().then(setdata);
   }, []);
 
   // Columnas de la grilla
@@ -100,38 +86,17 @@ export const TournamentsList = () => {
           </IconButton>
         ) : null,
     },
-    { field: "description", headerName: "Descripción", flex: 1 },
-    { field: "locationDescription", headerName: "Sede", flex: 1 },
-    { field: "categoryDescription", headerName: "Categoría", flex: 1 },
-    { field: "tournamentTypeDescription", headerName: "Tipo", flex: 1 },
+    { field: "TournamentDescription", headerName: "Torneo", flex: 1 },
+    { field: "PlayerAName", headerName: "Sede", flex: 1 },
+    { field: "PlayerBName", headerName: "Categoría", flex: 1 },
+    { field: "Status", headerName: "Estado", flex: 1 },
     {
       field: "closeDate",
       headerName: "Cierre",
       flex: 1,
-      renderCell: (params) => {
-        const date = new Date(params.value); // esto ya es UTC si la fecha tiene "Z"
-        return new Intl.DateTimeFormat("es-ES", {
-          timeZone: "UTC", // <- muy importante
-        }).format(date);
-      },
-    },
-    {
-      field: "initialDate",
-      headerName: "Inicio",
-      flex: 1,
       renderCell: (params) =>
         new Date(params.value).toLocaleDateString("es-ES"),
     },
-
-    {
-      field: "endDate",
-      headerName: "Fin",
-      flex: 1,
-      renderCell: (params) =>
-        new Date(params.value).toLocaleDateString("es-ES"),
-    },
-
-    { field: "statusName", headerName: "Estado", flex: 1 },
     {
       field: "delete",
       headerName: "",
@@ -160,7 +125,7 @@ export const TournamentsList = () => {
         sx={{ padding: 3, marginTop: 4, position: "relative" }}
       >
         <Typography variant="h5" gutterBottom>
-          Torneos
+          Partidos
         </Typography>
 
         <div style={{ height: 400, width: "100%" }}>

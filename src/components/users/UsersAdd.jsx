@@ -136,6 +136,28 @@ export const UsersAdd = () => {
                 helperText={errors.lastname?.message}
               />
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                value={watch("identification") || ""}
+                label="DNI"
+                {...register("identification")}
+                error={!!errors.lastname}
+                helperText={errors.lastname?.message}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                id="date"
+                label="Fecha de Nacimiento"
+                type="date"
+                value={watch("birthDate") || ""}
+                {...register("birthDate")}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -158,18 +180,6 @@ export const UsersAdd = () => {
                 label="Teléfono"
                 value={watch("phone") || ""}
                 {...register("phone")}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                id="date"
-                label="Fecha de Nacimiento"
-                type="date"
-                value={watch("birthDate") || ""}
-                {...register("birthDate")}
-                InputLabelProps={{
-                  shrink: true,
-                }}
               />
             </Grid>
             <Grid item xs={12} sm={3}>

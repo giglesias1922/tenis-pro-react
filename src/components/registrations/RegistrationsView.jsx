@@ -14,14 +14,19 @@ import {
   deleteRegistration,
 } from "../../services/registrationsService";
 
-export const RegistrationsView = ({ tournamentId, onRegistrationChange }) => {
+export const RegistrationsView = ({
+  tournamentId,
+  onRegistrationChange,
+  tournamentType,
+}) => {
   const [data, setdata] = useState([]);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-
+  console.log("tournamentType", tournamentType);
   useEffect(() => {
     getRegistrations(tournamentId).then((data) => {
       setdata(data);
+      console.log(data);
     });
   }, [tournamentId]);
 

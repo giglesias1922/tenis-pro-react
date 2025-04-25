@@ -19,6 +19,43 @@ export const getTournaments = async () => {
     }
   };
 
+  export const GetTournamentsToProgramming = async () => {
+    try {
+
+        const response = await fetch(`${API_URL}/to-programming`);
+        
+        if (!response.ok) {
+            throw new Error(`Error al obtener los torneos`);
+        }
+
+        return await response.json();
+        }
+        catch (error) {
+      console.error("Error en GetTournamentsToProgramming:", error);
+      throw error;
+        
+    }
+  };
+  
+  export const getTournamentsToRegistration = async () => {
+    try {
+
+        const response = await fetch(`${API_URL}/open-registrations`);
+        
+        if (!response.ok) {
+            throw new Error(`Error al obtener los torneos`);
+        }
+
+        return await response.json();
+        }
+        catch (error) {
+      console.error("Error en getTournaments:", error);
+      throw error;
+        
+    }
+  };
+  
+
   // 🔹 Eliminar torneo
   export const deleteTournament = async (id) => {
     try {
@@ -67,7 +104,7 @@ export const getTournamentById = async (id) => {
     }
     
     var data = await response.json();
-    console.log("data",data)
+    
     return data;
   } catch (error) {
     console.error("Error en getTournamentById:", error);
