@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useForm } from "react-hook-form"; // Importamos react-hook-form
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import useForm from "../../hooks/useForm";
 import {
   createUser,
   updateUser,
@@ -26,39 +26,55 @@ import {
   FormHelperText,
 } from "@mui/material";
 
-export const UsersAdd = () => {
+export const UserAdd = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [categories, setCategories] = useState([]);
   const [profiles, setProfiles] = useState([]);
   const isEdit = id !== "new" && id !== undefined;
 
-  // Inicializamos useForm
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors },
-  } = useForm();
+  const { formData, setFormData, handleChange, resetForm, resetFields } =
+    useForm({
+      name: "",
+      lastName: "",
+      phone1: "",
+      comment: "",
+      email: "",
+      image: "",
+      profileId: "",
+      categoryId: "",
+      birthDate: null,
+      active: false,
+    });
+
+  const [errors, setErrors] = useState({
+    name: "",
+    lastname: "",
+    profileid: "",
+    categoryId: "",
+    birthdate: null,
+  });
 
   // Función que se ejecuta al enviar el formulario
-  const onSubmit = async (data, event) => {
+  const handleSubmit = async (event) => {
     event?.preventDefault(); // Evita recargar la página
+
+    if (!validate()) return;
 
     const user = {
       id: id,
-      name: data.name,
-      lastname: data.lastName,
-      phone1: data.phone || "",
-      phone2: "",
-      email: data.email,
+      name: formData.name,
+      lastName: formData.lastName,
+      phone1: formData.phone || "",
+      comment: formData.comment,
+      email: formData.email,
       image: "",
-      profileid: data.profileId,
-      categoryId: data.categoryId,
-      birthdate: data.birthDate ? new Date(data.birthDate).toISOString() : null,
-      active: data.active || false, // El valor de "active" es false por defecto
+      profileId: formData.profileId,
+      categoryId: formData.categoryId,
+      birthdate: formData.birthDate
+        ? new Date(formData.birthDate).toISOString()
+        : null,
+      active: formData.active || false, // El valor de "active" es false por defecto
     };
 
     try {
@@ -73,8 +89,42 @@ export const UsersAdd = () => {
     }
   };
 
+  const location = useLocation();
+  const from = location.state?.from || "/"; // si no hay "from", vuelve a "/"
+
   const handleBackClick = () => {
-    navigate("/users");
+    console.log(from);
+    navigate(from);
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.name) newErrors.name = "El nombre es obligatorio";
+    if (!formData.lastName) newErrors.lastName = "El apellido es obligatorio";
+
+    if (!formData.birthDate)
+      newErrors.birthDate = "La Fecha de Nacimiento es obligatoria";
+
+    if (!formData.email) newErrors.email = "El email es obligatorio";
+
+    if (!formData.profileId) newErrors.profileId = "El perfil es obligatorio";
+
+    if (!formData.categoryId)
+      newErrors.categoryId = "La categoría es obligatoria";
+
+    if (formData.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        newErrors.email = "Ingrese un email válido";
+      }
+    }
+    console.log("newErrors", newErrors);
+    setErrors(newErrors);
+
+    const isValid = Object.keys(newErrors).length === 0;
+
+    return isValid;
   };
 
   useEffect(() => {
@@ -82,7 +132,7 @@ export const UsersAdd = () => {
     getProfiles().then(setProfiles);
     if (isEdit) {
       getUserById(id).then((user) => {
-        reset({
+        setFormData({
           name: user.name,
           lastName: user.lastName,
           phone: user.phone1,
@@ -94,16 +144,16 @@ export const UsersAdd = () => {
         });
       });
     }
-  }, [id, reset]);
+  }, [id]);
 
   return (
-    <Container maxWidth="sm">
+    <Container>
       <Paper
         elevation={3}
         sx={{ padding: 3, marginTop: 4, position: "relative" }}
       >
         <Typography variant="h5" gutterBottom>
-          {isEdit ? "Edición de Jugador" : "Nuevo Jugador"}
+          {isEdit ? "Edición de usuario" : "Nuevo usuario"}
         </Typography>
 
         <Box sx={{ position: "absolute", top: 10, right: 10 }}>
@@ -112,86 +162,77 @@ export const UsersAdd = () => {
           </IconButton>
         </Box>
 
-        <form onSubmit={handleSubmit(onSubmit)} key={id}>
+        <form onSubmit={handleSubmit} key={id}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid item sm={4}>
               <TextField
                 fullWidth
-                value={watch("name") || ""}
                 label="Nombre"
-                {...register("name", { required: "El nombre es obligatorio" })}
-                error={!!errors.name}
-                helperText={errors.name?.message}
+                name="name"
+                value={formData.name || ""}
+                onChange={handleChange}
               />
+              {errors.name && <FormHelperText>{errors.name}</FormHelperText>}
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item sm={4}>
               <TextField
                 fullWidth
-                value={watch("lastName") || ""}
                 label="Apellido"
-                {...register("lastName", {
-                  required: "El apellido es obligatorio",
-                })}
-                error={!!errors.lastname}
-                helperText={errors.lastname?.message}
+                name="lastName"
+                value={formData.lastName || ""}
+                onChange={handleChange}
               />
+              {errors.name && (
+                <FormHelperText>{errors.lastName}</FormHelperText>
+              )}
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                value={watch("identification") || ""}
-                label="DNI"
-                {...register("identification")}
-                error={!!errors.lastname}
-                helperText={errors.lastname?.message}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item sm={2}>
               <TextField
                 id="date"
                 label="Fecha de Nacimiento"
                 type="date"
-                value={watch("birthDate") || ""}
-                {...register("birthDate")}
-                InputLabelProps={{
-                  shrink: true,
-                }}
+                name="birthDate"
+                value={formData.birthDate || ""}
+                onChange={handleChange}
+              />
+              {errors.name && (
+                <FormHelperText>{errors.birthDate}</FormHelperText>
+              )}
+            </Grid>
+
+            <Grid item sm={4}>
+              <TextField
+                fullWidth
+                label="DNI"
+                value={formData.identification || ""}
+                onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={12}>
+
+            <Grid item xs={4}>
               <TextField
                 fullWidth
                 label="Email"
-                value={watch("email") || ""}
-                {...register("email", {
-                  // required: "El email es obligatorio",
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Formato de email inválido",
-                  },
-                })}
-                error={!!errors.email}
-                helperText={errors.email?.message}
+                value={formData.email || ""}
+                onChange={handleChange}
               />
+              {errors.email && <FormHelperText>{errors.email}</FormHelperText>}
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={4}>
               <TextField
                 fullWidth
                 label="Teléfono"
-                value={watch("phone") || ""}
-                {...register("phone")}
+                value={formData.phone || ""}
+                onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid item xs={12} sm={4}>
               <FormControl fullWidth error={!!errors.categoryId}>
                 <InputLabel id="category-label">Categoría</InputLabel>
                 <Select
                   labelId="category-label"
-                  {...register("categoryId", {
-                    required: "Selecciona una categoría",
-                  })}
-                  onChange={(e) => setValue("categoryId", e.target.value)} // Asegura la actualización
-                  value={watch("categoryId") || ""} // Evita valores vacíos
+                  onChange={handleChange}
+                  value={formData.categoryId}
                 >
                   {categories.map((option) => (
                     <MenuItem key={option.id} value={option.id}>
@@ -199,21 +240,18 @@ export const UsersAdd = () => {
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.categoryId && (
-                  <FormHelperText>{errors.categoryId.message}</FormHelperText>
+                {errors.tournamentId && (
+                  <FormHelperText>{errors.categoryId}</FormHelperText>
                 )}
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={5}>
+            <Grid item xs="{8}" sm={4}>
               <FormControl fullWidth error={!!errors.profileId}>
                 <InputLabel id="profile-label">Perfil</InputLabel>
                 <Select
                   labelId="profile-label"
-                  {...register("profileId", {
-                    required: "Selecciona el perfil",
-                  })}
-                  onChange={(e) => setValue("profileId", e.target.value)} // Asegura la actualización
-                  value={watch("profileId") || ""} // Evita valores vacíos
+                  onChange={handleChange}
+                  value={formData.profileId}
                 >
                   {profiles.map((option) => (
                     <MenuItem key={option.id} value={option.id}>
@@ -226,17 +264,28 @@ export const UsersAdd = () => {
                 )}
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item>
               <FormControlLabel
                 control={
                   <Switch
-                    {...register("active")}
-                    checked={watch("active") || true} // Usamos watch para obtener el valor
-                    onChange={(e) => setValue("active", e.target.checked)} // Actualiza el estado en react-hook-form
+                    checked={formData.active}
+                    onChange={handleChange}
                     name="active"
                   />
                 }
                 label="Activo"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Comentario"
+                name="comment"
+                value={formData.comment || ""}
+                onChange={handleChange}
+                multiline
+                rows={4}
+                variant="outlined"
               />
             </Grid>
             <Grid item xs={12}>

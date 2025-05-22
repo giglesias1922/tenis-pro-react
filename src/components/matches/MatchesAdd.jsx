@@ -1,18 +1,20 @@
 import { useState, useEffect, useContext } from "react";
 import useForm from "../../hooks/useForm";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+
 import { TournamentDetail } from "../Common/TournamentDetail";
 import {
   GetTournamentsToProgramming,
   getTournamentById,
 } from "../../services/tournamentsService";
-import {
-  createRegistration,
-  getRegistrations,
-} from "../../services/registrationsService";
+import { getRegistratedUsers } from "../../services/registrationsService";
+import { createMatch } from "../../services/matchesService";
 import { UserContext } from "../../context/UserContext";
 
 import {
-  Box,
+  TextField,
   Button,
   Container,
   Typography,
@@ -31,35 +33,33 @@ export const MatchesAdd = () => {
   const { userLog } = useContext(UserContext);
   const [tournamentsList, setTournamentsList] = useState([]);
   const [usersList, setUsersList] = useState([]);
-  const [errors, setErrors] = useState({ tournamentId: "", userId: "" });
+  const [errors, setErrors] = useState({
+    tournamentId: "",
+    registration1: "",
+    registration2: "",
+    scheduledDate: null,
+  });
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [tournamentType, setTournamentType] = useState(null);
 
-  const { formData, handleChange, resetForm } = useForm({
+  const { formData, handleChange, resetForm, resetFields } = useForm({
     tournamentId: "",
-    players: ["", ""],
+    registration1: "",
+    registration2: "",
+    scheduledDate: null,
   });
-
-  const handlePlayerChange = (index, value) => {
-    const newPlayers = [...formData.players];
-    newPlayers[index] = value;
-    handleChange({ target: { name: "players", value: newPlayers } }); // Usamos handleChange aquí
-  };
 
   useEffect(() => {
     GetTournamentsToProgramming().then(setTournamentsList);
   }, []);
 
   const refreshUsers = () => {
-    console.log("1");
     if (formData.tournamentId) {
-      console.log("2");
       getTournamentById(formData.tournamentId).then((data) => {
         setTournamentType(data.tournamentType);
         if (data?.categoryId) {
-          getRegistrations(formData.tournamentId).then((data) => {
+          getRegistratedUsers(formData.tournamentId).then((data) => {
             setUsersList(data);
-            console.log("data usr", data);
           });
         }
       });
@@ -67,7 +67,9 @@ export const MatchesAdd = () => {
   };
 
   useEffect(() => {
-    refreshUsers();
+    if (formData.tournamentId) {
+      refreshUsers();
+    }
   }, [formData.tournamentId]);
 
   const validate = () => {
@@ -76,40 +78,53 @@ export const MatchesAdd = () => {
       newErrors.tournamentId = "Selecciona un torneo";
     }
 
-    const [player1, player2] = formData.players;
+    if (!formData.scheduledDate) {
+      newErrors.scheduledDate = "Debe indicar la fecha y hora programada";
+    } else {
+      // Validación de fecha y hora para asegurarse de que no sea en el pasado
+      const selectedDateTime = new Date(formData.scheduledDate);
+      const currentDateTime = new Date();
 
-    if (tournamentType === 0) {
-      if (!player1) {
-        newErrors.players = "Selecciona un jugador";
+      if (selectedDateTime <= currentDateTime) {
+        newErrors.scheduledDate = "La fecha y hora no pueden ser en el pasado";
       }
     }
 
-    if (tournamentType === 1) {
-      if (!player1 || !player2) {
-        newErrors.players = "Selecciona ambos jugadores";
-      } else if (player1 === player2) {
-        newErrors.players = "Los jugadores deben ser diferentes";
-      }
+    if (!formData.registration1 || !formData.registration2) {
+      newErrors.registration2 = "Selecciona ambos jugadores";
+    } else if (formData.registration1 === formData.registration2) {
+      newErrors.registration2 = "Los jugadores deben ser diferentes";
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    const isValid = Object.keys(newErrors).length === 0;
+
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
+    const playersArray = [
+      formData.registration1,
+      formData.registration2,
+    ].filter((p) => p); // armás el array de players
+
     const obj = {
       tournamentid: formData.tournamentId,
-      players: formData.players.filter((p) => p), // quitar vacíos
+      registrations: playersArray,
       createdby: userLog?.id,
+      scheduledDate: formData.scheduledDate,
     };
 
     try {
-      await createRegistration(obj);
+      await createMatch(obj);
       refreshUsers();
       setOpenSnackbar(true);
+
+      resetFields(["registration1", "registration2"]);
     } catch (error) {
       console.error("Error al guardar el torneo:", error);
     }
@@ -119,7 +134,7 @@ export const MatchesAdd = () => {
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ padding: 3, marginTop: 4 }}>
         <Typography variant="h5" gutterBottom>
-          Nuevo encuentro
+          Nuevo partido
         </Typography>
 
         <form onSubmit={handleSubmit}>
@@ -151,6 +166,29 @@ export const MatchesAdd = () => {
               tournamentType={tournamentType}
             />
             <Grid item xs={12}>
+              <FormControl fullWidth error={!!errors.scheduledDate}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DateTimePicker
+                    label="Fecha y hora programada"
+                    value={formData.scheduledDate}
+                    onChange={(newValue) =>
+                      handleChange({
+                        target: { name: "scheduledDate", value: newValue },
+                      })
+                    }
+                    format="DD/MM/YYYY HH:mm"
+                    ampm={false}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                </LocalizationProvider>
+                {errors.scheduledDate && (
+                  <FormHelperText>{errors.scheduledDate}</FormHelperText>
+                )}
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
               <Grid
                 container
                 spacing={2}
@@ -158,21 +196,22 @@ export const MatchesAdd = () => {
                 justifyContent="center"
               >
                 <Grid item xs={5}>
-                  <FormControl fullWidth error={!!errors.players}>
+                  <FormControl fullWidth error={!!errors.registration1}>
                     <InputLabel id="player1-label">Jugador 1</InputLabel>
                     <Select
-                      labelId="player1-label"
-                      value={formData.players[0]}
-                      onChange={(e) => handlePlayerChange(0, e.target.value)}
+                      labelId="registration1-label"
+                      name="registration1"
+                      value={formData.registration1 || ""}
+                      onChange={handleChange}
                     >
                       {usersList.map((option) => (
                         <MenuItem key={option.id} value={option.id}>
-                          {option.name} {option.lastName}
+                          {option.displayName}
                         </MenuItem>
                       ))}
                     </Select>
-                    {errors.players && (
-                      <FormHelperText>{errors.players}</FormHelperText>
+                    {errors.registration1 && (
+                      <FormHelperText>{errors.registration1}</FormHelperText>
                     )}
                   </FormControl>
                 </Grid>
@@ -184,19 +223,23 @@ export const MatchesAdd = () => {
                 </Grid>
 
                 <Grid item xs={5}>
-                  <FormControl fullWidth>
+                  <FormControl fullWidth error={!!errors.registration2}>
                     <InputLabel id="player2-label">Jugador 2</InputLabel>
                     <Select
                       labelId="player2-label"
-                      value={formData.players[1]}
-                      onChange={(e) => handlePlayerChange(1, e.target.value)}
+                      name="registration2"
+                      value={formData.registration2 || ""}
+                      onChange={handleChange}
                     >
                       {usersList.map((option) => (
                         <MenuItem key={option.id} value={option.id}>
-                          {option.name} {option.lastName}
+                          {option.displayName}
                         </MenuItem>
                       ))}
                     </Select>
+                    {errors.registration2 && (
+                      <FormHelperText>{errors.registration2}</FormHelperText>
+                    )}
                   </FormControl>
                 </Grid>
               </Grid>
@@ -208,7 +251,6 @@ export const MatchesAdd = () => {
                 variant="contained"
                 color="primary"
                 fullWidth
-                disabled={!formData.tournamentId || !formData.players}
               >
                 Guardar
               </Button>

@@ -62,8 +62,6 @@ export const TournamentsAdd = () => {
       tournamentType: data.tournamentType,
     };
 
-    console.log("onSubmit", obj);
-
     try {
       if (isEdit) {
         await updateTournament(id, obj);

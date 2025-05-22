@@ -4,8 +4,6 @@ const API_URL = `${config.apiUrl}/registrations`;
 export const getRegistrations = async (tournamentId) => {
     try {
 
-        console.log("getRegistrations");
-
         const response = await fetch(`${API_URL}/tournament/${tournamentId}`);
         
         if (!response.ok) {
@@ -21,6 +19,21 @@ export const getRegistrations = async (tournamentId) => {
     }
   };
 
+  export const  getRegistratedUsers = async (tournamentId) => {
+    try {
+      const response = await fetch(`${API_URL}/users/${tournamentId}`);
+  
+      if (!response.ok) {
+        throw new Error(`Error al obtener los jugadores inscriptos`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Error en getRegistratedUsers:", error);
+      throw error;
+    }
+  };  
+
   export const  getUsersToRegistration = async (categoryId, tournamentId) => {
     try {
       const response = await fetch(`${API_URL}/${categoryId}/${tournamentId}`);
@@ -34,24 +47,7 @@ export const getRegistrations = async (tournamentId) => {
       console.error("Error en getUsersToRegistration:", error);
       throw error;
     }
-  };
-
-  export const  getUsersRegistrated = async ( tournamentId) => {
-    try {
-      const response = await fetch(`${API_URL}/${tournamentId}`);
-  
-      if (!response.ok) {
-        throw new Error(`Error al obtener los usuarios inscriptos`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error("Error en getUsersRegistrated:", error);
-      throw error;
-    }
-  };
-  
-  
+  };  
 
   // 🔹 Eliminar torneo
   export const deleteRegistration = async (id) => {
@@ -66,6 +62,21 @@ export const getRegistrations = async (tournamentId) => {
   
     } catch (error) {
       console.error("Error en deleteRegistration:", error);
+      throw error;
+    }
+  };
+
+  export const getRegistrationById = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`);
+  
+      if (!response.ok) {
+        throw new Error(`Error al obtener la inscripción`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Error en getRegistrationById:", error);
       throw error;
     }
   };

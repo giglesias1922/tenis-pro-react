@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton, Box } from "@mui/material";
+import HistoryIcon from "@mui/icons-material/History";
+import ScoreboardIcon from "@mui/icons-material/Scoreboard";
 import { useNavigate } from "react-router-dom";
-import { getMatches } from "../../services/matchesService.js";
+import { getMatches, deleteMatch } from "../../services/matchesService.js";
 import {
+  IconButton,
   Fab,
+  Box,
   Container,
   Paper,
   Typography,
@@ -14,21 +17,25 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Tooltip,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
-import { Visibility } from "@mui/icons-material";
+import { MatchHistory } from "./MatchHistory.jsx";
+import { MatchResultAdd } from "./MatchResultAdd.jsx";
+import { ClosedCaptionDisabledOutlined } from "@mui/icons-material";
 
 export const MatchesList = () => {
   const [data, setdata] = useState([]);
   const navigate = useNavigate();
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [openHistory, setOpenHistory] = useState(false);
+  const [openResult, setOpenResult] = useState(false);
+
+  const onModalResultClose = () => {
+    setOpenResult(false);
+  };
 
   const handleAddClick = () => {
     navigate("/matches/new");
@@ -38,14 +45,34 @@ export const MatchesList = () => {
     navigate(`/matches/${id}`);
   };
 
+  const handleOpenHistory = (id) => {
+    setSelectedId(id);
+    setOpenHistory(true);
+  };
+
+  const handleCloseHistory = () => {
+    setOpenHistory(false);
+  };
+
+  const handleOpenResult = (id) => {
+    setSelectedId(id);
+    setOpenResult(true);
+  };
+
+  const handleCloseResult = () => {
+    setOpenResult(false);
+  };
+
   const handleDeleteClick = (id) => {
     setSelectedId(id);
+
     setOpenConfirm(true);
   };
 
   const handleConfirmDelete = async () => {
     try {
-      await deletematch(selectedId);
+      await deleteMatch(selectedId);
+      console.log(selectedId);
       // Recargar los datos después de la eliminación
       const updatedData = await getMatches();
       setdata(updatedData);
@@ -53,7 +80,7 @@ export const MatchesList = () => {
       console.error("Error al eliminar el match:", error);
     } finally {
       setOpenConfirm(false);
-      setSelectedTournamentId(null);
+      setSelectedId(null);
     }
   };
 
@@ -62,8 +89,16 @@ export const MatchesList = () => {
     setSelectedId(null);
   };
 
+  const onGridReload = () => {
+    getMatches().then((data) => {
+      setdata(data);
+    });
+  };
+
   useEffect(() => {
-    getMatches().then(setdata);
+    getMatches().then((data) => {
+      setdata(data);
+    });
   }, []);
 
   // Columnas de la grilla
@@ -77,26 +112,60 @@ export const MatchesList = () => {
       maxWidth: 50,
       renderCell: (params) =>
         params.row.status < 2 ? (
+          <Tooltip title="Editar">
+            <IconButton
+              color="primary"
+              size="small"
+              onClick={() => handleEditClick(params.row.id)}
+            >
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null,
+    },
+    {
+      field: "history",
+      headerName: "",
+      flex: 1,
+      width: 50,
+      minWidth: 50,
+      maxWidth: 50,
+      renderCell: (params) => (
+        <Tooltip title="Ver historia">
           <IconButton
             color="primary"
             size="small"
-            onClick={() => handleEditClick(params.row.id)}
+            onClick={() => handleOpenHistory(params.row.id)}
           >
-            <EditIcon />
+            <HistoryIcon />
           </IconButton>
+        </Tooltip>
+      ),
+    },
+    {
+      field: "result",
+      headerName: "",
+      flex: 1,
+      width: 50,
+      minWidth: 50,
+      maxWidth: 50,
+      renderCell: (params) =>
+        params.row.status < 2 ? (
+          <Tooltip title="Cargar resultado">
+            <IconButton
+              color="primary"
+              size="small"
+              onClick={() => handleOpenResult(params.row.id)}
+            >
+              <ScoreboardIcon />
+            </IconButton>
+          </Tooltip>
         ) : null,
     },
-    { field: "TournamentDescription", headerName: "Torneo", flex: 1 },
-    { field: "PlayerAName", headerName: "Sede", flex: 1 },
-    { field: "PlayerBName", headerName: "Categoría", flex: 1 },
-    { field: "Status", headerName: "Estado", flex: 1 },
-    {
-      field: "closeDate",
-      headerName: "Cierre",
-      flex: 1,
-      renderCell: (params) =>
-        new Date(params.value).toLocaleDateString("es-ES"),
-    },
+    { field: "tournamentDescription", headerName: "Torneo", flex: 1 },
+    { field: "playerAName", headerName: "Jugador A", flex: 1 },
+    { field: "playerBName", headerName: "Jugador B", flex: 1 },
+    { field: "statusDescription", headerName: "Estado", flex: 1 },
     {
       field: "delete",
       headerName: "",
@@ -156,7 +225,8 @@ export const MatchesList = () => {
           Confirmar Eliminación
         </DialogTitle>
         <DialogContent>
-          ¿Estás seguro de que deseas eliminar el torneo?
+          Si elimina el partido, se eliminarán sus resultados y su historial
+          ¿Estás seguro de que deseas eliminar el partido?
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelDelete} color="primary">
@@ -165,6 +235,42 @@ export const MatchesList = () => {
           <Button onClick={handleConfirmDelete} color="error">
             Eliminar
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/*Dialog History*/}
+      <Dialog
+        open={openHistory}
+        onClose={handleCloseHistory}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Historia del Partido</DialogTitle>
+        <DialogContent dividers>
+          <MatchHistory Id={selectedId} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseHistory}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/*Dialog Result*/}
+      <Dialog
+        open={openResult}
+        onClose={handleCloseResult}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Resultado del partido</DialogTitle>
+        <DialogContent dividers>
+          <MatchResultAdd
+            matchId={selectedId}
+            onModalResultClose={onModalResultClose}
+            onGridReload={onGridReload}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseResult}>Cerrar</Button>
         </DialogActions>
       </Dialog>
     </Container>

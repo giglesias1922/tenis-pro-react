@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   AppBar,
   Toolbar,
@@ -7,16 +7,17 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Avatar,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../context/UserContext";
 
 export const Navbar = () => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate(); // Para navegar entre páginas
-
+  const { isAuthenticated, user, logout } = useContext(UserContext);
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -26,7 +27,8 @@ export const Navbar = () => {
   };
 
   const handleAuth = () => {
-    setIsAuthenticated(!isAuthenticated);
+    if (isAuthenticated) logout();
+    else handleNavigation("/login");
   };
 
   // Función para redirigir a las rutas
@@ -70,14 +72,17 @@ export const Navbar = () => {
           My Tournament App
         </Typography>
 
-        {/* Login/Logout a la derecha con icono */}
-        <Button
-          color="inherit"
-          startIcon={<AccountCircleIcon />}
-          onClick={handleAuth}
-        >
-          {isAuthenticated ? "Logout" : "Login"}
-        </Button>
+        {isAuthenticated && user ? (
+          <Avatar
+            alt={user.name}
+            src={user.image}
+            sx={{ width: 32, height: 32, marginRight: 1 }}
+          />
+        ) : (
+          <Button color="inherit" onClick={handleAuth}>
+            Ingresar
+          </Button>
+        )}
       </Toolbar>
     </AppBar>
   );

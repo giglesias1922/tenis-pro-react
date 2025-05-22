@@ -13,11 +13,7 @@ import {
 } from "@mui/material";
 import { getTournamentById } from "../../services/tournamentsService";
 
-export const TournamentDetail = ({
-  tournamentId,
-  onRegistrationChange,
-  tournamentType,
-}) => {
+export const TournamentDetail = ({ tournamentId }) => {
   const [tournamentDetail, setTournamentDetail] = useState(null);
 
   useEffect(() => {

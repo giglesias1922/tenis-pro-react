@@ -37,18 +37,23 @@ export const RegistrationsAdd = () => {
   const { userLog } = useContext(UserContext);
   const [tournamentsList, setTournamentsList] = useState([]);
   const [usersList, setUsersList] = useState([]);
-  const [errors, setErrors] = useState({ tournamentId: "", userId: "" });
+  const [errors, setErrors] = useState({
+    tournamentId: "",
+    player1: "",
+    player2: "",
+  });
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [tournamentType, setTournamentType] = useState(null);
   const [SelectedTournamentId, setSelectedTournamentId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-  
+  const [ValidForm, setValidForm] = useState(false);
+
   const { formData, handleChange, resetForm } = useForm({
     tournamentId: "",
     player1: "",
-    player2: ""
+    player2: "",
   });
-  
+
   useEffect(() => {
     getTournamentsToRegistration().then(setTournamentsList);
   }, []);
@@ -67,6 +72,26 @@ export const RegistrationsAdd = () => {
     }
   };
 
+  const GetDisplayName = () => {
+    let displayName = "";
+
+    const player1 = usersList.find((u) => u.id === formData.player1);
+
+    if (tournamentType === 0 && player1) {
+      displayName = `${player1.name} ${player1.lastName}`;
+    }
+
+    if (tournamentType === 1 && player1) {
+      const player2 = usersList.find((u) => u.id === formData.player2);
+
+      if (player2) {
+        displayName = `${player1.name} ${player1.lastName} / ${player2.name} ${player2.lastName}`;
+      }
+    }
+
+    return displayName;
+  };
+
   useEffect(() => {
     setSelectedTournamentId(formData.tournamentId);
     refreshUsers();
@@ -74,38 +99,50 @@ export const RegistrationsAdd = () => {
 
   const validate = () => {
     const newErrors = {};
+
     if (!formData.tournamentId) {
       newErrors.tournamentId = "Selecciona un torneo";
     }
 
-    const [player1, player2] = formData.players;
-
     if (tournamentType === 0) {
-      if (!player1) {
-        newErrors.players = "Selecciona un jugador";
+      if (!formData.player1) {
+        newErrors.player1 = "Selecciona un jugador";
       }
     }
 
     if (tournamentType === 1) {
-      if (!player1 || !player2) {
-        newErrors.players = "Selecciona ambos jugadores";
-      } else if (player1 === player2) {
-        newErrors.players = "Los jugadores deben ser diferentes";
+      if (!formData.player1 || !formData.player2) {
+        newErrors.player2 = "Selecciona ambos jugadores";
+      } else if (formData.player1 === formData.player2) {
+        newErrors.player2 = "Los jugadores deben ser diferentes";
       }
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    const isValid = Object.keys(newErrors).length === 0;
+    setValidForm(isValid);
+
+    return isValid;
   };
+
+  useEffect(() => {
+    if (formData.tournamentId && (formData.player1 || formData.player2)) {
+      validate();
+    }
+  }, [formData.player1, formData.player2, formData.tournamentId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
+    const playersArray = [formData.player1, formData.player2].filter((p) => p); // armás el array de players
+
     const obj = {
-      tournamentid: formData.tournamentId,
-      players: formData.players.filter((p) => p), // quitar vacíos
-      createdby: userLog?.id,
+      tournamentId: formData.tournamentId,
+      players: playersArray,
+      createdBy: userLog?.id ?? formData.player1,
+      displayName: GetDisplayName(),
     };
 
     try {
@@ -113,7 +150,7 @@ export const RegistrationsAdd = () => {
       refreshUsers();
       setOpenSnackbar(true);
     } catch (error) {
-      console.error("Error al guardar el torneo:", error);
+      console.error("Error al guardar la inscripción:", error);
     }
   };
 
@@ -164,12 +201,12 @@ export const RegistrationsAdd = () => {
             )}
 
             <Grid item xs={12}>
-              <FormControl fullWidth error={!!errors.players}>
+              <FormControl fullWidth error={!!errors.player1}>
                 <InputLabel id="player1-label">Jugador</InputLabel>
                 <Select
                   labelId="player1-label"
                   name="player1"
-                  value={formData.player1}
+                  value={formData.player1 || ""}
                   onChange={handleChange}
                 >
                   {usersList.map((option) => (
@@ -178,31 +215,30 @@ export const RegistrationsAdd = () => {
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.players && (
-                  <FormHelperText>{errors.players}</FormHelperText>
+                {errors.player1 && (
+                  <FormHelperText>{errors.player1}</FormHelperText>
                 )}
               </FormControl>
             </Grid>
-            
-            {tournamentType === 1 ? (
-              
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel id="player2-label">Jugador 2</InputLabel>
-                    <Select
-                      labelId="player2-label"
-                      name="player2"
-                      value={formData.player2}
-                      onChange={handleChange}
-                    >
-                      {usersList.map((option) => (
-                        <MenuItem key={option.id} value={option.id}>
-                          {option.name} {option.lastName}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+
+            {tournamentType === 1 && (
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id="player2-label">Jugador 2</InputLabel>
+                  <Select
+                    labelId="player2-label"
+                    name="player2"
+                    value={formData.player2 || ""}
+                    onChange={handleChange}
+                  >
+                    {usersList.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.name} {option.lastName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
             )}
 
             <Grid item xs={12}>
@@ -211,7 +247,7 @@ export const RegistrationsAdd = () => {
                 variant="contained"
                 color="primary"
                 fullWidth
-                disabled={!formData.tournamentId || !formData.players}
+                disabled={!ValidForm}
               >
                 Guardar
               </Button>

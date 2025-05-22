@@ -1,6 +1,7 @@
 // theme/DataGridTheme.js
 import { AlignHorizontalCenter } from "@mui/icons-material";
 import { createTheme } from "@mui/material/styles";
+import { blue } from '@mui/material/colors';
 
 export const DataGridTheme = createTheme({
   components: {
@@ -13,7 +14,8 @@ export const DataGridTheme = createTheme({
           },
         root: {
             '& .MuiDataGrid-columnHeader': {
-                backgroundColor: '#bee9e8',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                backgroundColor: blue[100],
                 color: 'black',
             },
         },

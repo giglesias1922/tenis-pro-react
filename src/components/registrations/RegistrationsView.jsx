@@ -55,7 +55,7 @@ export const RegistrationsView = ({
 
   // Columnas de la grilla
   const columns = [
-    { field: "userName", headerName: "Jugador", flex: 1 },
+    { field: "displayName", headerName: "Jugador", flex: 1 },
     { field: "createdAt", headerName: "Fecha Inscripción", flex: 1 },
     {
       field: "delete",

@@ -1,21 +1,37 @@
 import { useState } from "react";
 
-const useForm = (initialValues = {}) => {
-  const [formData, setFormData] = useState(initialValues);
+const useForm = (initialState = {}) => {
+  const [formData, setFormData] = useState(initialState);
 
+  // Función para manejar cambios en los campos del formulario
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
+    const { name, value } = e.target; // Extraemos el nombre y el valor del campo
+    setFormData((prevState) => ({
+      ...prevState, // Copiamos el estado anterior
+      [name]: value, // Actualizamos solo el campo que ha cambiado
+    }));
+  };
+
+  // Función para resetear el formulario
+  const resetForm = () => {
+    setFormData(initialState);
+  };
+
+  const resetFields = (fields = []) => {
+    setFormData((prevState) => {
+      const updated = { ...prevState };
+      fields.forEach((field) => {
+        updated[field] = initialState[field] ?? ""; // Usamos el valor inicial o cadena vacía
+      });
+      return updated;
     });
   };
 
-  const resetForm = () => {
-    setFormData(initialValues);
-  };
+  return { formData, setFormData, handleChange, resetForm, resetFields };
 
-  return { formData, handleChange, resetForm };
+
 };
+
+
 
 export default useForm;

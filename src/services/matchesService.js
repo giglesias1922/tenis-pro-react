@@ -9,8 +9,10 @@ export const getMatches = async () => {
         if (!response.ok) {
             throw new Error(`Error al obtener los matches`);
         }
-  
-        return await response.json();
+        
+        const data = await response.json();
+
+        return data;
         }
         catch (error) {
       console.error("Error en getMatches:", error);
@@ -50,7 +52,6 @@ export const createMatch= async (data) => {
       throw new Error(`Error al crear el match: ${errorMessage}`);
     }
 
-    return await response.json();
   } catch (error) {
     console.error("Error en createMatch:", error);
     throw error;
@@ -73,6 +74,26 @@ export const getMatchById = async (id) => {
   }
 };
 
+
+export const getMatchHistory = async (id) => {
+  try {
+    
+    const response = await fetch(`${API_URL}/${id}/history`);
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener la historia del match`);
+    }
+
+    const data = await response.json();
+    console.log("getMatchHistory",data);
+    return data;
+  } catch (error) {
+    console.error("Error en getMatchHistory:", error);
+    throw error;
+  }
+};
+
+
 // 🔹 Actualizar usuario (Editar)
 export const updateMatch = async (id, data) => {
   try {
@@ -89,6 +110,26 @@ export const updateMatch = async (id, data) => {
     
   } catch (error) {
     console.error("Error en updateMatch:", error);
+    throw error;
+  }
+};
+
+export const addResult = async (id, data) => {
+  console.log("data",data)
+  try {
+    const response = await fetch(`${API_URL}/${id}/result`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al cargar resultado al match`);
+    }
+
+    
+  } catch (error) {
+    console.error("Error en addResult:", error);
     throw error;
   }
 };

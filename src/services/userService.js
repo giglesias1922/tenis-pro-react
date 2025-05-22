@@ -3,18 +3,26 @@ const API_URL = `${config.apiUrl}/users`;
 
 export const getUsers = async () => {
     try {
-
-        const response = await fetch(`${API_URL}`);
+      const token = localStorage.getItem("token");
+console.log("token",token)
+      const response = await fetch(`${API_URL}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        credentials: 'include'
+      });
         
-        if (!response.ok) {
-            throw new Error(`Error al obtener los usuarios`);
-        }
-  
-        return await response.json();
-        }
-        catch (error) {
-      console.error("Error en getUsers:", error);
-      throw error;
+console.log("response",response.ok)
+      if (!response.ok) {
+          throw new Error(`Error al obtener los usuarios`);
+      }
+
+      return await response.json();
+      }
+      catch (error) {
+        console.error("Error en getUsers:", error);
+        throw error;
         
     }
   };
@@ -40,6 +48,8 @@ export const createUser = async (userData) => {
     }
   };
   
+  
+
   // 🔹 Obtener un usuario por ID
   export const getUserById = async (id) => {
     try {
@@ -66,7 +76,7 @@ export const createUser = async (userData) => {
       }
       
       const data =  await response.json();
-console.log(data);
+      
       return data;
     } catch (error) {
       console.error("Error en getUsersByCategory:", error);
