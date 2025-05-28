@@ -16,3 +16,10 @@ torneos:
 - validar que las fechas no sean menores o mayores enrtes si
 
 inscripciones, 
+
+cuadno elijo un partido puedo mostrar el historial de enfrentamientos
+
+
+git 
+https://github.com/giglesias1922/tenis-pro-react/tree/master
+https://github.com/giglesias1922/tenis-pro-react/tree/master

@@ -17,9 +17,13 @@ import { MatchesAdd } from "./matches/MatchesAdd.jsx";
 import { Login } from "./login/Login.jsx";
 import { Register } from "./login/Register.jsx";
 
+import { AlertSuccess } from "./Common/AlertSuccess.jsx";
+
 export const App = () => {
   return (
     <div>
+      <AlertSuccess />
+
       <Navbar />
       <ThemeProvider theme={DataGridTheme}>
         <Routes>

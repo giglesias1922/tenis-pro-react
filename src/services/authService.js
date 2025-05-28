@@ -1,6 +1,14 @@
 import config from "../../config";
 const API_URL = `${config.apiUrl}/auth`;
 
+export const AuthErrorEnum = {
+  UserNotFound: 1,
+  InvalidCredentials: 2,
+  UserDisabled: 3,
+  AccountLocked: 4,
+  Unauthorized: 5
+};
+
 export const loginUser = async (email, password) => {
  
     try {
@@ -10,23 +18,39 @@ export const loginUser = async (email, password) => {
         body: JSON.stringify({ Email: email, Password: password })
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        alert(1);
-        alert(data);
-        alert(data.token);
-        alert(token);
-        return data.token;
+      const data = await response.json();
 
-      } else {
-        throw new Error(data.error || "Error de autenticación");
-      }
+      if (response.ok) {        
+        return { success: true, token: data.token };
 
-
+      }      
+      
+      return { success: false, errorCode:  data.errorCode, errorDescription:data.errorDescription };
     } catch (error) {
       throw new Error(error.message || "Error de red");
     }
   };
+
+  export const ResentActivationEmail = async (user) =>{
+    try 
+    {
+      const response = await fetch(`${API_URL}/ResentActivationEmail`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(user)
+      });
+          
+      if (response.ok) {
+        var data = await response.json();
+
+        return data.token;
+      }
+    } catch (error) {
+      throw new Error(error.message || "Error de red");
+    }
+  }
 
   export const register = async (user) => {
 
@@ -39,11 +63,11 @@ export const loginUser = async (email, password) => {
         },
         body: JSON.stringify(user)
       });
-  
-      const data = await response.json();
-  
+          
       if (response.ok) {
-        return data; // mensaje OK o info que retorne el backend
+        const newUser = await response.json();
+
+        return newUser; // mensaje OK o info que retorne el backend
       } else {
         throw new Error(data || "Error en registro");
       }
