@@ -10,14 +10,14 @@ export const AuthErrorEnum = {
 };
 
 export const loginUser = async (email, password) => {
- 
+  console.log(`${API_URL}/login`);
     try {
       const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ Email: email, Password: password })
       });
-
+      console.log(response);
       const data = await response.json();
 
       if (response.ok) {        
@@ -56,6 +56,7 @@ export const loginUser = async (email, password) => {
 
     // user es un objeto con las propiedades: Email, Password, BirthDate, CategoryId, Comment, etc.
     try {
+      
       const response = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: {

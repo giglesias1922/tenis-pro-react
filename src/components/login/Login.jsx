@@ -27,9 +27,8 @@ export const Login = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useContext(UserContext);
+  const { login, user } = useContext(UserContext);
   const [openAlertActivate, setOpenAlertActivate] = useState(false);
-  const [userId, setUserId] = useState(null);
 
   const { formData, handleChange, resetForm, resetFields } = useForm({
     userName: "",
@@ -55,17 +54,14 @@ export const Login = () => {
       setIsLoading(true);
 
       const resul = await loginUser(formData.userName, formData.password);
-      console.log(resul);
+
       if (resul.success) {
-        console.log("token", token);
-        console.log("userid", result.userId);
+        login(resul.token);
 
-        setUserId(result.userId);
-
-        login(token);
+        console.log("user", user);
         navigate("/");
         return;
-      } else if (resul.errorCode === 3) {
+      } else if (resul.errorCode === 5) {
         // Mostrar alerta con botón para
         setIsLoading(false);
         setOpenAlertActivate(true);
@@ -108,7 +104,6 @@ export const Login = () => {
 
   const handleResentActivationEmail = async () => {
     const user = {
-      Id: userId,
       Email: formData.userName,
     };
 
@@ -200,7 +195,7 @@ export const Login = () => {
           xs={12}
           sx={{ display: "flex", mt: 3, justifyContent: "center" }}
         >
-          <Link href="/resetpass" underline="hover">
+          <Link href="/resetpassword" underline="hover">
             ¿Olvidaste tu contraseña?
           </Link>
         </Grid>

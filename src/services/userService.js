@@ -2,9 +2,11 @@ import config from "../../config";
 const API_URL = `${config.apiUrl}/users`;
 
 export const getUsers = async () => {
+  console.log("API_URL",API_URL)
+
     try {
       const token = localStorage.getItem("token");
-console.log("token",token)
+
       const response = await fetch(`${API_URL}`, {
         method: "GET",
         headers: {
@@ -13,7 +15,6 @@ console.log("token",token)
         credentials: 'include'
       });
         
-console.log("response",response.ok)
       if (!response.ok) {
           throw new Error(`Error al obtener los usuarios`);
       }

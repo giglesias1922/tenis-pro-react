@@ -1,7 +1,10 @@
 import React from "react";
 import { Navbar } from "./Navbar.jsx";
+import { HeaderBar } from "./HeaderBar.jsx";
 
-import { ThemeProvider } from "@mui/material/styles";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+
 import { DataGridTheme } from "../DataGridTheme.js";
 
 import { Home } from "./Home.jsx";
@@ -16,16 +19,23 @@ import { MatchesList } from "./matches/MatchesList.jsx";
 import { MatchesAdd } from "./matches/MatchesAdd.jsx";
 import { Login } from "./login/Login.jsx";
 import { Register } from "./login/Register.jsx";
+import { ResetPasswordRequest } from "./login/ResetPasswordRequest.jsx";
 
 import { AlertSuccess } from "./Common/AlertSuccess.jsx";
+
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+  },
+});
 
 export const App = () => {
   return (
     <div>
       <AlertSuccess />
-
-      <Navbar />
-      <ThemeProvider theme={DataGridTheme}>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <HeaderBar />
         <Routes>
           <Route path="/" element={<Home />} />{" "}
           <Route path="/*" element={<Home />} />{" "}
@@ -48,6 +58,7 @@ export const App = () => {
           {/* Para editar */}
           <Route path="/login" element={<Login />} /> {/* Para editar */}
           <Route path="/register" element={<Register />} />{" "}
+          <Route path="resetpassword" element={<ResetPasswordRequest />} />{" "}
         </Routes>
       </ThemeProvider>
     </div>

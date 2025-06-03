@@ -36,6 +36,7 @@ export const Register = () => {
   const [openAlert, setOpenAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const imageInputRef = useRef();
+  const [errors, setErrors] = useState({});
 
   const { formData, setFormData, handleChange } = useForm({
     name: "",
@@ -48,8 +49,6 @@ export const Register = () => {
     password: "",
     confirmPassword: "",
   });
-
-  const [errors, setErrors] = useState({});
 
   const showAlert = () => {
     setOpenAlert(true);
@@ -84,12 +83,12 @@ export const Register = () => {
   };
 
   const handleBackClick = () => {
-    navigate(from);
+    navigate("/login");
   };
 
   const handleCloseAlert = () => {
     setOpenAlert(false);
-    navigate(from);
+    navigate("/login");
   };
 
   const validate = () => {
