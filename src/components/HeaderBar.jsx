@@ -11,7 +11,6 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import AdbIcon from "@mui/icons-material/Adb";
 import Logo from "../../resources/Logo.png";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -31,22 +30,21 @@ const settings = [
 ];
 
 export const HeaderBar = () => {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const navigate = useNavigate(); // Para navegar entre páginas
+  const [anchorElNav, setAnchorElNav] = useState(null);
+  const [anchorElUser, setAnchorElUser] = useState(null);
+  const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useContext(UserContext);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
 
+  const handleOpenUserMenu = (event) => {
+    setAnchorElUser(event.currentTarget);
+  };
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
@@ -63,18 +61,60 @@ export const HeaderBar = () => {
           disableGutters
           sx={{ minHeight: "auto", paddingY: 0, margin: 0 }}
         >
+          {/* Logo siempre visible */}
           <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
             <Link to="/" style={{ display: "flex", alignItems: "center" }}>
               <img
                 src={Logo}
                 alt="Logo"
-                style={{
-                  height: "75px",
-                  objectFit: "contain",
-                }}
+                style={{ height: "75px", objectFit: "contain" }}
               />
             </Link>
           </Box>
+
+          {/* Menú hamburguesa para xs */}
+          <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
+            <IconButton
+              size="large"
+              aria-label="menu"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleOpenNavMenu}
+              color="inherit"
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorElNav}
+              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+              keepMounted
+              transformOrigin={{ vertical: "top", horizontal: "left" }}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{ display: { xs: "block", md: "none" } }}
+            >
+              {pages
+                .filter(
+                  (page) =>
+                    (isAuthenticated === true && page.auth === true) ||
+                    page.auth === false
+                )
+                .map((page) => (
+                  <MenuItem
+                    key={page.label}
+                    onClick={() => {
+                      handleNavigation(page.path);
+                      handleCloseNavMenu();
+                    }}
+                  >
+                    <Typography textAlign="center">{page.label}</Typography>
+                  </MenuItem>
+                ))}
+            </Menu>
+          </Box>
+
+          {/* Menú de botones para md en adelante */}
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages
               .filter(
@@ -92,6 +132,8 @@ export const HeaderBar = () => {
                 </Button>
               ))}
           </Box>
+
+          {/* Usuario autenticado */}
           {isAuthenticated === true && (
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
@@ -104,17 +146,11 @@ export const HeaderBar = () => {
               </Tooltip>
               <Menu
                 sx={{ mt: "45px" }}
-                id="menu-appbar"
+                id="menu-appbar-user"
                 anchorEl={anchorElUser}
-                anchorOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
                 keepMounted
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
               >
@@ -125,7 +161,7 @@ export const HeaderBar = () => {
                       handleCloseUserMenu();
                       if (setting.action === "logout") {
                         logout();
-                        navigate("/login"); // redirige al home si querés
+                        navigate("/login");
                       }
                     }}
                   >
@@ -137,6 +173,8 @@ export const HeaderBar = () => {
               </Menu>
             </Box>
           )}
+
+          {/* Usuario NO autenticado */}
           {isAuthenticated === false && (
             <Box sx={{ flexGrow: 0 }}>
               <Button
