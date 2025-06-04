@@ -90,11 +90,9 @@ export const UserAdd = () => {
   };
 
   const location = useLocation();
-  const from = location.state?.from || "/"; // si no hay "from", vuelve a "/"
 
   const handleBackClick = () => {
-    console.log(from);
-    navigate(from);
+    navigate("/users");
   };
 
   const validate = () => {

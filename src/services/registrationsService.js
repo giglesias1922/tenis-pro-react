@@ -1,10 +1,11 @@
 import config from "../../config";
 const API_URL = `${config.apiUrl}/registrations`;
+import {authorizedFetch} from "../helpers/fetchHelper.js"
 
 export const getRegistrations = async (tournamentId) => {
     try {
 
-        const response = await fetch(`${API_URL}/tournament/${tournamentId}`);
+        const response = await authorizedFetch(`${API_URL}/tournament/${tournamentId}`);
         
         if (!response.ok) {
             throw new Error(`Error al obtener los torneos`);
@@ -21,7 +22,7 @@ export const getRegistrations = async (tournamentId) => {
 
   export const  getRegistratedUsers = async (tournamentId) => {
     try {
-      const response = await fetch(`${API_URL}/users/${tournamentId}`);
+      const response = await authorizedFetch(`${API_URL}/users/${tournamentId}`);
   
       if (!response.ok) {
         throw new Error(`Error al obtener los jugadores inscriptos`);
@@ -36,7 +37,7 @@ export const getRegistrations = async (tournamentId) => {
 
   export const  getUsersToRegistration = async (categoryId, tournamentId) => {
     try {
-      const response = await fetch(`${API_URL}/${categoryId}/${tournamentId}`);
+      const response = await authorizedFetch(`${API_URL}/${categoryId}/${tournamentId}`);
   
       if (!response.ok) {
         throw new Error(`Error al obtener los usuarios no registrados`);
@@ -52,7 +53,7 @@ export const getRegistrations = async (tournamentId) => {
   // 🔹 Eliminar torneo
   export const deleteRegistration = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
+      const response = await authorizedFetch(`${API_URL}/${id}`, {
         method: "DELETE",
       });
   
@@ -68,7 +69,7 @@ export const getRegistrations = async (tournamentId) => {
 
   export const getRegistrationById = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`);
+      const response = await authorizedFetch(`${API_URL}/${id}`);
   
       if (!response.ok) {
         throw new Error(`Error al obtener la inscripción`);
@@ -85,7 +86,7 @@ export const getRegistrations = async (tournamentId) => {
 export const createRegistration = async (data) => {
     console.log(data);
   try {
-    const response = await fetch(API_URL, {
+    const response = await authorizedFetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

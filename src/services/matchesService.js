@@ -1,10 +1,12 @@
 import config from "../../config";
 const API_URL = `${config.apiUrl}/matches`;
+import {authorizedFetch} from "../helpers/fetchHelper.js"
+
 
 export const getMatches = async () => {
     try {
 
-        const response = await fetch(`${API_URL}`);
+        const response = await authorizedFetch(`${API_URL}`,{method:"GET"});
         
         if (!response.ok) {
             throw new Error(`Error al obtener los matches`);
@@ -24,7 +26,7 @@ export const getMatches = async () => {
   // 🔹 Eliminar usuario
   export const deleteMatch = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
+      const response = await authorizedFetch(`${API_URL}/${id}`, {
         method: "DELETE",
       });
   
@@ -41,7 +43,7 @@ export const getMatches = async () => {
   // 🔹 Crear un Category (Alta)
 export const createMatch= async (data) => {
   try {
-    const response = await fetch(API_URL, {
+    const response = await authorizedFetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -61,7 +63,7 @@ export const createMatch= async (data) => {
 // 🔹 Obtener un usuario por ID
 export const getMatchById = async (id) => {
   try {
-    const response = await fetch(`${API_URL}/${id}`);
+    const response = await authorizedFetch(`${API_URL}/${id}`,{method:"GET"});
 
     if (!response.ok) {
       throw new Error(`Error al obtener el match`);
@@ -78,7 +80,7 @@ export const getMatchById = async (id) => {
 export const getMatchHistory = async (id) => {
   try {
     
-    const response = await fetch(`${API_URL}/${id}/history`);
+    const response = await authorizedFetch(`${API_URL}/${id}/history`,{method:"GET"});
 
     if (!response.ok) {
       throw new Error(`Error al obtener la historia del match`);
@@ -97,7 +99,7 @@ export const getMatchHistory = async (id) => {
 // 🔹 Actualizar usuario (Editar)
 export const updateMatch = async (id, data) => {
   try {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await authorizedFetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -117,7 +119,7 @@ export const updateMatch = async (id, data) => {
 export const addResult = async (id, data) => {
   console.log("data",data)
   try {
-    const response = await fetch(`${API_URL}/${id}/result`, {
+    const response = await authorizedFetch(`${API_URL}/${id}/result`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

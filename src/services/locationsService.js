@@ -1,10 +1,11 @@
 import config from "../../config";
 const API_URL = `${config.apiUrl}/locations`;
+import {authorizedFetch} from "../helpers/fetchHelper.js"
 
 export const getLocations = async () => {
     try {
 
-        const response = await fetch(`${API_URL}`);
+        const response = await authorizedFetch(`${API_URL}`,{ method: "GET" });
         
         if (!response.ok) {
             throw new Error(`Error al obtener las sedes`);
@@ -22,9 +23,7 @@ export const getLocations = async () => {
   // 🔹 Eliminar sede
   export const deleteLocation = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
+      const response = await authorizedFetch(`${API_URL}/${id}`, {method: "DELETE"});
   
       if (!response.ok) {
         throw new Error(`Error al eliminar la sede`);
@@ -39,7 +38,7 @@ export const getLocations = async () => {
   // 🔹 Crear una sede (Alta)
 export const createLocation = async (data) => {
   try {
-    const response = await fetch(API_URL, {
+    const response = await authorizedFetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -60,7 +59,7 @@ export const createLocation = async (data) => {
 // 🔹 Obtener un sede por ID
 export const getLocationById = async (id) => {
   try {
-    const response = await fetch(`${API_URL}/${id}`);
+    const response = await authorizedFetch(`${API_URL}/${id}`,{method:"GET"});
 
     if (!response.ok) {
       throw new Error(`Error al obtener la sede`);
@@ -76,7 +75,7 @@ export const getLocationById = async (id) => {
 // 🔹 Actualizar sede (Editar)
 export const updateLocation = async (id, data) => {
   try {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await authorizedFetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

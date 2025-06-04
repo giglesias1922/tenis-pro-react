@@ -1,19 +1,12 @@
 import config from "../../config";
+import {authorizedFetch} from "../helpers/fetchHelper.js"
 const API_URL = `${config.apiUrl}/users`;
 
+
 export const getUsers = async () => {
-  console.log("API_URL",API_URL)
 
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
-        credentials: 'include'
-      });
+      const response = await authorizedFetch(`${API_URL}`);
         
       if (!response.ok) {
           throw new Error(`Error al obtener los usuarios`);
@@ -31,9 +24,9 @@ export const getUsers = async () => {
 // 🔹 Crear un usuario (Alta)
 export const createUser = async (userData) => {
     try {
-      const response = await fetch(API_URL, {
+      const response = await authorizedFetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" }, // opcional si ya lo pones por defecto en authorizedFetch
         body: JSON.stringify(userData),
       });
   
@@ -54,7 +47,8 @@ export const createUser = async (userData) => {
   // 🔹 Obtener un usuario por ID
   export const getUserById = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`);
+      console.log(`${API_URL}/${id}`);
+      const response = await authorizedFetch(`${API_URL}/${id}`,{ method: "GET" });
   
       if (!response.ok) {
         throw new Error(`Error al obtener usuario`);
@@ -70,7 +64,7 @@ export const createUser = async (userData) => {
   // 🔹 Obtener un usuario por ID
   export const getUsersByCategory = async (categoryId) => {
     try {
-      const response = await fetch(`${API_URL}/Category/${categoryId}`);
+      const response = await authorizedFetch(`${API_URL}/Category/${categoryId}`,{ method: "GET" });
   
       if (!response.ok) {
         throw new Error(`Error al obtener usuarios por categoria`);
@@ -88,7 +82,7 @@ export const createUser = async (userData) => {
   // 🔹 Actualizar usuario (Editar)
   export const updateUser = async (id, userData) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
+      const response = await authorizedFetch(`${API_URL}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
@@ -108,9 +102,7 @@ export const createUser = async (userData) => {
   // 🔹 Eliminar usuario
   export const deleteUser = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
+      const response = await authorizedFetch(`${API_URL}/${id}`, {method: "DELETE"});
   
       if (!response.ok) {
         throw new Error(`Error al eliminar usuario`);

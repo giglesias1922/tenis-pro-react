@@ -10,6 +10,7 @@ import { DataGridTheme } from "../DataGridTheme.js";
 import { Home } from "./Home.jsx";
 import { Routes, Route } from "react-router-dom";
 import { UsersList } from "./users/UsersList.jsx";
+import { UserAdd } from "./users/UserAdd.jsx";
 import { CategoriesList } from "./categories/CategoriesList.jsx";
 import { CategoriesAdd } from "./categories/CategoriesAdd.jsx";
 import { TournamentsList } from "./tournaments/TournamentsList.jsx";
@@ -41,6 +42,7 @@ export const App = () => {
           <Route path="/*" element={<Home />} />{" "}
           {/* Página principal por defecto */}
           <Route path="/users" element={<UsersList />} />{" "}
+          <Route path="/users/:id" element={<UserAdd />} />{" "}
           {/* Ruta para categorias */}
           <Route path="/categories" element={<CategoriesList />} />{" "}
           <Route path="/categories/new" element={<CategoriesAdd />} />

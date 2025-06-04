@@ -1,10 +1,11 @@
 import config from "../../config";
 const API_URL = `${config.apiUrl}/tournaments`;
+import {authorizedFetch} from "../helpers/fetchHelper.js"
 
 export const getTournaments = async () => {
     try {
 
-        const response = await fetch(`${API_URL}`);
+        const response = await authorizedFetch(`${API_URL}`);
         
         if (!response.ok) {
             throw new Error(`Error al obtener los torneos`);
@@ -22,7 +23,7 @@ export const getTournaments = async () => {
   export const GetTournamentsToProgramming = async () => {
     try {
 
-        const response = await fetch(`${API_URL}/to-programming`);
+        const response = await authorizedFetch(`${API_URL}/to-programming`);
         
         if (!response.ok) {
             throw new Error(`Error al obtener los torneos`);
@@ -40,7 +41,7 @@ export const getTournaments = async () => {
   export const getTournamentsToRegistration = async () => {
     try {
 
-        const response = await fetch(`${API_URL}/open-registrations`);
+        const response = await authorizedFetch(`${API_URL}/open-registrations`);
         
         if (!response.ok) {
             throw new Error(`Error al obtener los torneos`);
@@ -59,7 +60,7 @@ export const getTournaments = async () => {
   // 🔹 Eliminar torneo
   export const deleteTournament = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
+      const response = await authorizedFetch(`${API_URL}/${id}`, {
         method: "DELETE",
       });
   
@@ -76,7 +77,7 @@ export const getTournaments = async () => {
   // 🔹 Crear un torneo (Alta)
 export const createTournament = async (data) => {
   try {
-    const response = await fetch(API_URL, {
+    const response = await authorizedFetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -97,7 +98,7 @@ export const createTournament = async (data) => {
 // 🔹 Obtener un torneo por ID
 export const getTournamentById = async (id) => {
   try {
-    const response = await fetch(`${API_URL}/${id}`);
+    const response = await authorizedFetch(`${API_URL}/${id}`);
 
     if (!response.ok) {
       throw new Error(`Error al obtener el torneo`);
@@ -117,7 +118,7 @@ export const updateTournament = async (id, data) => {
   try {
     console.log("data",data);
     
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await authorizedFetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
