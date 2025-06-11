@@ -1,5 +1,8 @@
 import React, { useState } from "react";
+import { resetPasswordRequest } from "../../services/authService";
 import useForm from "../../hooks/useForm";
+import { showAlert } from "../Common/AlertSuccess";
+import { useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -13,11 +16,15 @@ import {
 } from "@mui/material";
 
 export const ResetPasswordRequest = () => {
+  const navigate = useNavigate();
   const [openAlert, setOpenAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState({});
 
   const { formData, setFormData, handleChange } = useForm({
+    email: "",
+  });
+
+  const [errors, setErrors] = useState({
     email: "",
   });
 
@@ -51,11 +58,18 @@ export const ResetPasswordRequest = () => {
     };
 
     try {
-      await resetPaswordRequest(user);
-      showAlert();
+      const response = await resetPasswordRequest(user);
+
+      if (response.success) {
+        showAlert(
+          "Te enviamos un correo de reseteo de contaseña. Si no lo ves, revisá tu carpeta de spam."
+        );
+        navigate("/login");
+      } else setErrors({ email: response.message });
     } catch (error) {
+      setErrors({ email: error.message });
+    } finally {
       setIsLoading(false);
-      console.error("Error resetPasword:", error);
     }
   };
 
@@ -71,7 +85,7 @@ export const ResetPasswordRequest = () => {
         sx={{ padding: 3, marginTop: 4, position: "relative" }}
       >
         <Typography variant="h5" gutterBottom>
-          Recuperar contraseña
+          Cambio de contraseña
         </Typography>
 
         <form onSubmit={handleSubmit} key={1}>
@@ -86,7 +100,7 @@ export const ResetPasswordRequest = () => {
               helperText={errors.email}
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={{ mt: 2 }}>
             <Button
               variant="contained"
               type="submit"
@@ -98,28 +112,11 @@ export const ResetPasswordRequest = () => {
                 ) : null
               }
             >
-              {isLoading ? "Guardando..." : "Guardar"}
+              {isLoading ? "Confirmando..." : "Confirmar"}
             </Button>
           </Grid>
         </form>
       </Paper>
-
-      <Snackbar
-        open={openAlert}
-        autoHideDuration={3000}
-        onClose={handleCloseAlert}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          variant="filled"
-          severity="success"
-          onClose={() => setOpenAlert(false)}
-          sx={{ width: "100%" }}
-        >
-          Te enviamos un correo de recuperacón de contaseña. Si no lo ves,
-          revisá tu carpeta de spam.
-        </Alert>
-      </Snackbar>
     </Container>
   );
 };

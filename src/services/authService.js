@@ -94,3 +94,51 @@ export const loginUser = async (email, password) => {
       throw new Error(error.message || "Error de red");
     }
   };
+
+  export const resetPasswordRequest = async (user) => {
+    try {
+      const frontendUrl = window.location.origin
+      
+      const response = await fetch(`${API_URL}/ResetPasswordRequest`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(user)
+      });
+  
+      const data = await response.json(); // retorna mensaje
+  
+      if (response.ok) {
+        return data;
+      } else {
+        throw new Error(data || "Error en activación");
+      }
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  export const changePassword = async (user) => {
+    try {
+      const frontendUrl = window.location.origin
+      
+      const response = await fetch(`${API_URL}/ChangePassword`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(user)
+      });
+  
+      const data = await response.json(); // retorna mensaje
+  
+      if (response.ok) {
+        return data;
+      } else {
+        throw new Error(data || "Error en activación");
+      }
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };

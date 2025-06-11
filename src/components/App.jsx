@@ -21,7 +21,7 @@ import { MatchesAdd } from "./matches/MatchesAdd.jsx";
 import { Login } from "./login/Login.jsx";
 import { Register } from "./login/Register.jsx";
 import { ResetPasswordRequest } from "./login/ResetPasswordRequest.jsx";
-
+import { ResetPassword } from "./login/ResetPassword.jsx";
 import { AlertSuccess } from "./Common/AlertSuccess.jsx";
 
 const darkTheme = createTheme({
@@ -60,7 +60,8 @@ export const App = () => {
           {/* Para editar */}
           <Route path="/login" element={<Login />} /> {/* Para editar */}
           <Route path="/register" element={<Register />} />{" "}
-          <Route path="resetpassword" element={<ResetPasswordRequest />} />{" "}
+          <Route path="/resetpassword" element={<ResetPasswordRequest />} />{" "}
+          <Route path="/reset-password-form/:id" element={<ResetPassword />} />{" "}
         </Routes>
       </ThemeProvider>
     </div>

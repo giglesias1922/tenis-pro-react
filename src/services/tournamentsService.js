@@ -116,8 +116,6 @@ export const getTournamentById = async (id) => {
 // 🔹 Actualizar torneo (Editar)
 export const updateTournament = async (id, data) => {
   try {
-    console.log("data",data);
-    
     const response = await authorizedFetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

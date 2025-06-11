@@ -13,7 +13,7 @@ export const AlertSuccess = () => {
       setOpen(true);
 
       // Auto close después de 3 segundos
-      setTimeout(() => setOpen(false), 3000);
+      setTimeout(() => setOpen(false), 4000);
     };
   }, []);
 
@@ -43,7 +43,7 @@ export const AlertSuccess = () => {
       >
         <Alert
           variant="filled"
-          severity="success"
+          severity="info"
           sx={{ fontSize: "1rem", width: "100%" }}
           onClose={() => setOpen(false)}
         >
