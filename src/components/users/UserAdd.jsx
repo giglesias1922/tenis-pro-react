@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import useForm from "../../hooks/useForm";
 import {
@@ -8,8 +8,9 @@ import {
 } from "../../services/userService";
 import { getCategories } from "../../services/categoriesService";
 import { getProfiles } from "../../services/profilesService";
-import { IconButton, Box } from "@mui/material";
+import { IconButton, Box, Avatar, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   TextField,
   Switch,
@@ -32,6 +33,9 @@ export const UserAdd = () => {
   const [categories, setCategories] = useState([]);
   const [profiles, setProfiles] = useState([]);
   const isEdit = id !== "new" && id !== undefined;
+  const imageInputRef = useRef();
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
 
   const { formData, setFormData, handleChange, resetForm, resetFields } =
     useForm({
@@ -44,7 +48,7 @@ export const UserAdd = () => {
       profileId: "",
       categoryId: "",
       birthDate: null,
-      active: false,
+      status: 1,
     });
 
   const [errors, setErrors] = useState({
@@ -53,13 +57,34 @@ export const UserAdd = () => {
     profileid: "",
     categoryId: "",
     birthdate: null,
+    email: "",
   });
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+      // No subas la imagen acá
+    }
+  };
 
   // Función que se ejecuta al enviar el formulario
   const handleSubmit = async (event) => {
     event?.preventDefault(); // Evita recargar la página
 
     if (!validate()) return;
+
+    let imageUrl = formData.image;
+
+    // if(imageUrl)
+    // {
+    const token = localStorage.getItem("token");
+    const decoded = jwt_decode(token);
+    const userId = decoded.id || decoded.userId || decoded.sub; // Ajusta según tu token
+
+    imageUrl = await uploadImageToCloudinary(selectedImageFile, userId);
+    // }
 
     const user = {
       id: id,
@@ -68,22 +93,30 @@ export const UserAdd = () => {
       phone1: formData.phone || "",
       comment: formData.comment,
       email: formData.email,
-      image: "",
+      image: imageUrl || "",
       profileId: formData.profileId,
       categoryId: formData.categoryId,
       birthdate: formData.birthDate
         ? new Date(formData.birthDate).toISOString()
         : null,
-      active: formData.active || false, // El valor de "active" es false por defecto
+      status: 1, // El valor de "active" es false por defecto
     };
 
     try {
+      var response;
+
       if (isEdit) {
-        await updateUser(id, user);
+        response = await updateUser(id, user);
       } else {
-        await createUser(user);
+        response = await createUser(user);
       }
-      navigate("/users");
+
+      if (response.success) navigate("/users");
+      else {
+        const newErrors = {};
+        newErrors.email = response.message;
+        setErrors(newErrors);
+      }
     } catch (error) {
       console.error("Error al guardar el usuario:", error);
     }
@@ -117,7 +150,6 @@ export const UserAdd = () => {
         newErrors.email = "Ingrese un email válido";
       }
     }
-    console.log("newErrors", newErrors);
     setErrors(newErrors);
 
     const isValid = Object.keys(newErrors).length === 0;
@@ -135,10 +167,12 @@ export const UserAdd = () => {
           lastName: user.lastName,
           phone: user.phone1,
           email: user.email,
+          image: user.image || "",
           birthDate: user.birthDate?.split("T")[0], // Para formato 'YYYY-MM-DD'
           categoryId: user.categoryId,
-          active: user.active || false, // Se asegura que el valor de "active" se pase correctamente
+          status: user.status || 0, // Se asegura que el valor de "active" se pase correctamente
           profileId: user.profileId,
+          comment: user.comment,
         });
       });
     }
@@ -160,6 +194,41 @@ export const UserAdd = () => {
           </IconButton>
         </Box>
 
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+          <Box sx={{ position: "relative" }}>
+            <Avatar
+              src={imagePreview || formData.image || "/sin-imagen.png"}
+              sx={{ width: 120, height: 120 }}
+            />
+            <Tooltip title="Cambiar imagen">
+              <IconButton
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  backgroundColor: "primary.main",
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
+                  },
+                  width: 32,
+                  height: 32,
+                }}
+                onClick={() => imageInputRef.current.click()}
+              >
+                <EditIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              ref={imageInputRef}
+              onChange={handleImageChange}
+            />
+          </Box>
+        </Box>
+
         <form onSubmit={handleSubmit} key={id}>
           <Grid container spacing={2}>
             <Grid item sm={4}>
@@ -170,7 +239,9 @@ export const UserAdd = () => {
                 value={formData.name || ""}
                 onChange={handleChange}
               />
-              {errors.name && <FormHelperText>{errors.name}</FormHelperText>}
+              {errors.name && (
+                <FormHelperText error>{errors.name}</FormHelperText>
+              )}
             </Grid>
             <Grid item sm={4}>
               <TextField
@@ -181,7 +252,7 @@ export const UserAdd = () => {
                 onChange={handleChange}
               />
               {errors.name && (
-                <FormHelperText>{errors.lastName}</FormHelperText>
+                <FormHelperText error>{errors.lastName}</FormHelperText>
               )}
             </Grid>
             <Grid item sm={2}>
@@ -193,8 +264,8 @@ export const UserAdd = () => {
                 value={formData.birthDate || ""}
                 onChange={handleChange}
               />
-              {errors.name && (
-                <FormHelperText>{errors.birthDate}</FormHelperText>
+              {errors.birthDate && (
+                <FormHelperText error>{errors.birthDate}</FormHelperText>
               )}
             </Grid>
 
@@ -211,25 +282,31 @@ export const UserAdd = () => {
               <TextField
                 fullWidth
                 label="Email"
+                name="email"
                 value={formData.email || ""}
+                disabled={isEdit}
                 onChange={handleChange}
               />
-              {errors.email && <FormHelperText>{errors.email}</FormHelperText>}
+              {errors.email && (
+                <FormHelperText error>{errors.email}</FormHelperText>
+              )}
             </Grid>
             <Grid item xs={4}>
               <TextField
                 fullWidth
                 label="Teléfono"
+                name="phone"
                 value={formData.phone || ""}
                 onChange={handleChange}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
-              <FormControl fullWidth error={!!errors.categoryId}>
+              <FormControl fullWidth>
                 <InputLabel id="category-label">Categoría</InputLabel>
                 <Select
                   labelId="category-label"
                   onChange={handleChange}
+                  name="categoryId"
                   value={formData.categoryId}
                 >
                   {categories.map((option) => (
@@ -238,18 +315,19 @@ export const UserAdd = () => {
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.tournamentId && (
-                  <FormHelperText>{errors.categoryId}</FormHelperText>
+                {errors.categoryId && (
+                  <FormHelperText error>{errors.categoryId}</FormHelperText>
                 )}
               </FormControl>
             </Grid>
             <Grid item xs="{8}" sm={4}>
-              <FormControl fullWidth error={!!errors.profileId}>
+              <FormControl fullWidth>
                 <InputLabel id="profile-label">Perfil</InputLabel>
                 <Select
                   labelId="profile-label"
                   onChange={handleChange}
                   value={formData.profileId}
+                  name="profileId"
                 >
                   {profiles.map((option) => (
                     <MenuItem key={option.id} value={option.id}>
@@ -258,7 +336,7 @@ export const UserAdd = () => {
                   ))}
                 </Select>
                 {errors.profileId && (
-                  <FormHelperText>{errors.profileId.message}</FormHelperText>
+                  <FormHelperText error>{errors.profileId}</FormHelperText>
                 )}
               </FormControl>
             </Grid>
@@ -266,9 +344,9 @@ export const UserAdd = () => {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={formData.active}
+                    checked={formData.status}
                     onChange={handleChange}
-                    name="active"
+                    name="status"
                   />
                 }
                 label="Activo"

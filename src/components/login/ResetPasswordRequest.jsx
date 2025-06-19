@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import { resetPasswordRequest } from "../../services/authService";
+import {
+  resetPasswordRequest,
+  validateResetToken,
+} from "../../services/authService";
 import useForm from "../../hooks/useForm";
 import { showAlert } from "../Common/AlertSuccess";
 import { useNavigate } from "react-router-dom";
+
 import {
   TextField,
   Button,
@@ -53,12 +57,8 @@ export const ResetPasswordRequest = () => {
     if (!validate()) return;
     setIsLoading(true);
 
-    const user = {
-      email: formData.email,
-    };
-
     try {
-      const response = await resetPasswordRequest(user);
+      const response = await resetPasswordRequest(formData.email);
 
       if (response.success) {
         showAlert(

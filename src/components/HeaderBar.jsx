@@ -15,13 +15,25 @@ import Logo from "../../resources/Logo.png";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown"; // Agregado para ícono de submenú
 
 const pages = [
-  { label: "Users", path: "/users", auth: true },
-  { label: "Categories", path: "/categories", auth: true },
-  { label: "Tournaments", path: "/tournaments", auth: false },
-  { label: "Registrations", path: "/registrations", auth: true },
-  { label: "Matches", path: "/matches", auth: true },
+  { id: 1, label: "Usuarios", path: "/users", auth: true },
+  { id: 2, label: "Torneos", path: "/tournaments", auth: false },
+  { id: 3, label: "Inscripciones", path: "/registrations", auth: true },
+  { id: 4, label: "Partidos", path: "/matches", auth: true },
+  { id: 5, label: "Mantenimiento", path: "", auth: true },
+  { id: 7, label: "Ranking", path: "/ranking", auth: true },
+
+  //submenus
+  { id: 6, label: "Categorias", path: "/categories", auth: true, parentId: 5 },
+  {
+    id: 8,
+    label: "Parámetros",
+    path: "/parameters",
+    auth: true,
+    parentId: 5,
+  },
 ];
 
 const settings = [
@@ -29,29 +41,27 @@ const settings = [
   { label: "Salir", action: "logout" },
 ];
 
+const parentMenus = pages.filter((p) => !p.parentId);
+const subMenus = pages.filter((p) => p.parentId);
+
 export const HeaderBar = () => {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
+  const [submenuAnchor, setSubmenuAnchor] = useState(null);
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useContext(UserContext);
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+  const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
+  const handleCloseNavMenu = () => setAnchorElNav(null);
+  const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
+  const handleCloseUserMenu = () => setAnchorElUser(null);
+  const handleOpenSubmenu = (event) => setSubmenuAnchor(event.currentTarget);
+  const handleCloseSubmenu = () => setSubmenuAnchor(null);
 
   const handleNavigation = (path) => {
     navigate(path);
     handleCloseNavMenu();
+    handleCloseSubmenu();
   };
 
   return (
@@ -61,7 +71,7 @@ export const HeaderBar = () => {
           disableGutters
           sx={{ minHeight: "auto", paddingY: 0, margin: 0 }}
         >
-          {/* Logo siempre visible */}
+          {/* Logo */}
           <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
             <Link to="/" style={{ display: "flex", alignItems: "center" }}>
               <img
@@ -72,13 +82,11 @@ export const HeaderBar = () => {
             </Link>
           </Box>
 
-          {/* Menú hamburguesa para xs */}
+          {/* Menú hamburguesa en XS */}
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
               aria-label="menu"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
               onClick={handleOpenNavMenu}
               color="inherit"
             >
@@ -87,26 +95,18 @@ export const HeaderBar = () => {
             <Menu
               id="menu-appbar"
               anchorEl={anchorElNav}
-              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-              keepMounted
-              transformOrigin={{ vertical: "top", horizontal: "left" }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
+              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+              transformOrigin={{ vertical: "top", horizontal: "left" }}
               sx={{ display: { xs: "block", md: "none" } }}
             >
               {pages
-                .filter(
-                  (page) =>
-                    (isAuthenticated === true && page.auth === true) ||
-                    page.auth === false
-                )
+                .filter((page) => (isAuthenticated && page.auth) || !page.auth)
                 .map((page) => (
                   <MenuItem
-                    key={page.label}
-                    onClick={() => {
-                      handleNavigation(page.path);
-                      handleCloseNavMenu();
-                    }}
+                    key={page.id}
+                    onClick={() => handleNavigation(page.path)}
                   >
                     <Typography textAlign="center">{page.label}</Typography>
                   </MenuItem>
@@ -114,27 +114,61 @@ export const HeaderBar = () => {
             </Menu>
           </Box>
 
-          {/* Menú de botones para md en adelante */}
+          {/* Menú en MD+ */}
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-            {pages
-              .filter(
-                (page) =>
-                  (isAuthenticated === true && page.auth === true) ||
-                  page.auth === false
-              )
-              .map((page) => (
-                <Button
-                  key={page.label}
-                  onClick={() => handleNavigation(page.path)}
-                  sx={{ my: 2, color: "white", display: "block" }}
-                >
-                  {page.label}
-                </Button>
-              ))}
+            {parentMenus
+              .filter((page) => (isAuthenticated && page.auth) || !page.auth)
+              .map((page) => {
+                const children = subMenus.filter(
+                  (sub) => sub.parentId === page.id
+                );
+                const hasSubmenu = children.length > 0;
+
+                return hasSubmenu ? (
+                  <Box key={page.id}>
+                    <Button
+                      onClick={handleOpenSubmenu}
+                      sx={{
+                        my: 2,
+                        color: "white",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      {page.label}
+                      <ArrowDropDownIcon />
+                    </Button>
+                    <Menu
+                      anchorEl={submenuAnchor}
+                      open={Boolean(submenuAnchor)}
+                      onClose={handleCloseSubmenu}
+                      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                      transformOrigin={{ vertical: "top", horizontal: "left" }}
+                    >
+                      {children.map((child) => (
+                        <MenuItem
+                          key={child.id}
+                          onClick={() => handleNavigation(child.path)}
+                        >
+                          {child.label}
+                        </MenuItem>
+                      ))}
+                    </Menu>
+                  </Box>
+                ) : (
+                  <Button
+                    key={page.id}
+                    onClick={() => handleNavigation(page.path)}
+                    sx={{ my: 2, color: "white", display: "block" }}
+                  >
+                    {page.label}
+                  </Button>
+                );
+              })}
           </Box>
 
           {/* Usuario autenticado */}
-          {isAuthenticated === true && (
+          {isAuthenticated && (
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
@@ -146,11 +180,7 @@ export const HeaderBar = () => {
               </Tooltip>
               <Menu
                 sx={{ mt: "45px" }}
-                id="menu-appbar-user"
                 anchorEl={anchorElUser}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                keepMounted
-                transformOrigin={{ vertical: "top", horizontal: "right" }}
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
               >
@@ -174,8 +204,8 @@ export const HeaderBar = () => {
             </Box>
           )}
 
-          {/* Usuario NO autenticado */}
-          {isAuthenticated === false && (
+          {/* Usuario no autenticado */}
+          {!isAuthenticated && (
             <Box sx={{ flexGrow: 0 }}>
               <Button
                 key="login"

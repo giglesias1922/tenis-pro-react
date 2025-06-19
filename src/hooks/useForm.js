@@ -13,8 +13,8 @@ const useForm = (initialState = {}) => {
   };
 
   // Función para resetear el formulario
-  const resetForm = () => {
-    setFormData(initialState);
+  const resetForm = (newState = initialState) => {
+    setFormData(newState);
   };
 
   const resetFields = (fields = []) => {
@@ -28,10 +28,6 @@ const useForm = (initialState = {}) => {
   };
 
   return { formData, setFormData, handleChange, resetForm, resetFields };
-
-
 };
-
-
 
 export default useForm;

@@ -1,93 +1,56 @@
 import config from "../../config";
+import axiosInstance from './axiosConfig';
+
 const API_URL = `${config.apiUrl}/locations`;
-import {authorizedFetch} from "../helpers/fetchHelper.js"
 
 export const getLocations = async () => {
     try {
-
-        const response = await authorizedFetch(`${API_URL}`,{ method: "GET" });
-        
-        if (!response.ok) {
-            throw new Error(`Error al obtener las sedes`);
-        }
-  
-        return await response.json();
-        }
-        catch (error) {
+      const response = await axiosInstance.get(API_URL);
+      return response.data;
+    } catch (error) {
       console.error("Error en getLocations:", error);
       throw error;
-        
     }
-  };
+};
 
-  // 🔹 Eliminar sede
-  export const deleteLocation = async (id) => {
+// 🔹 Eliminar sede
+export const deleteLocation = async (id) => {
     try {
-      const response = await authorizedFetch(`${API_URL}/${id}`, {method: "DELETE"});
-  
-      if (!response.ok) {
-        throw new Error(`Error al eliminar la sede`);
-      }
-  
+      await axiosInstance.delete(`${API_URL}/${id}`);
     } catch (error) {
       console.error("Error en deleteLocation:", error);
       throw error;
     }
-  };
+};
 
-  // 🔹 Crear una sede (Alta)
+// 🔹 Crear una sede (Alta)
 export const createLocation = async (data) => {
-  try {
-    const response = await authorizedFetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error(`Error al crear la sede: ${errorMessage}`);
+    try {
+      const response = await axiosInstance.post(API_URL, data);
+      return response.data;
+    } catch (error) {
+      console.error("Error en createLocation:", error);
+      throw error;
     }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error en createLocation:", error);
-    throw error;
-  }
 };
 
 // 🔹 Obtener un sede por ID
 export const getLocationById = async (id) => {
-  try {
-    const response = await authorizedFetch(`${API_URL}/${id}`,{method:"GET"});
-
-    if (!response.ok) {
-      throw new Error(`Error al obtener la sede`);
+    try {
+      const response = await axiosInstance.get(`${API_URL}/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error en getLocationById:", error);
+      throw error;
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error("Error en getLocationById:", error);
-    throw error;
-  }
 };
 
 // 🔹 Actualizar sede (Editar)
 export const updateLocation = async (id, data) => {
-  try {
-    const response = await authorizedFetch(`${API_URL}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al actualizar sede`);
+    try {
+      await axiosInstance.put(`${API_URL}/${id}`, data);
+    } catch (error) {
+      console.error("Error en updateLocation:", error);
+      throw error;
     }
-
-    
-  } catch (error) {
-    console.error("Error en updateLocation:", error);
-    throw error;
-  }
 };

@@ -49,7 +49,7 @@ export const Navbar = () => {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          <MenuItem onClick={() => handleNavigation("/")}>Home</MenuItem>
+          <MenuItem onClick={() => handleNavigation("/")}>Inicio</MenuItem>
           <MenuItem onClick={() => handleNavigation("/users")}>
             Usuarios
           </MenuItem>
@@ -66,11 +66,6 @@ export const Navbar = () => {
             Partidos
           </MenuItem>
         </Menu>
-
-        {/* Espacio flexible para centrar el título */}
-        <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center" }}>
-          My Tournament App
-        </Typography>
 
         {isAuthenticated && user ? (
           <Avatar

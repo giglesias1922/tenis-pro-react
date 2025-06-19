@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Alert, Dialog, DialogContent, Backdrop } from "@mui/material";
+import { Alert, Snackbar } from "@mui/material";
 
 let showAlertExternal;
 
@@ -11,46 +11,28 @@ export const AlertSuccess = () => {
     showAlertExternal = (msg) => {
       setMessage(msg);
       setOpen(true);
-
-      // Auto close después de 3 segundos
-      setTimeout(() => setOpen(false), 4000);
     };
   }, []);
 
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   return (
-    <Dialog
+    <Snackbar
       open={open}
-      onClose={() => setOpen(false)}
-      BackdropProps={{
-        timeout: 500,
-        style: { backgroundColor: "rgba(0, 0, 0, 0.5)" }, // oscurece fondo
-      }}
-      PaperProps={{
-        style: {
-          background: "transparent",
-          boxShadow: "none",
-          overflow: "visible",
-        },
-      }}
+      autoHideDuration={4000}
+      onClose={handleClose}
+      anchorOrigin={{ vertical: "top", horizontal: "center" }}
     >
-      <DialogContent
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 0,
-        }}
+      <Alert
+        onClose={handleClose}
+        severity="success"
+        sx={{ width: "100%" }}
       >
-        <Alert
-          variant="filled"
-          severity="info"
-          sx={{ fontSize: "1rem", width: "100%" }}
-          onClose={() => setOpen(false)}
-        >
-          {message}
-        </Alert>
-      </DialogContent>
-    </Dialog>
+        {message}
+      </Alert>
+    </Snackbar>
   );
 };
 

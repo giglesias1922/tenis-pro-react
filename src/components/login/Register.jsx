@@ -160,11 +160,17 @@ export const Register = () => {
                   position: "absolute",
                   bottom: 0,
                   right: 0,
-                  backgroundColor: "white",
+                  backgroundColor: "primary.main",
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
+                  },
+                  width: 32,
+                  height: 32,
                 }}
                 onClick={() => imageInputRef.current.click()}
               >
-                <EditIcon />
+                <EditIcon sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
             <input

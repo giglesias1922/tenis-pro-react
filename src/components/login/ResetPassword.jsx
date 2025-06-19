@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { changePassword } from "../../services/authService";
-import useForm from "../../hooks/useForm";
 import { showAlert } from "../Common/AlertSuccess";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { validateResetToken, changePassword } from "../../services/authService";
+import useForm from "../../hooks/useForm";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Link,
   TextField,
@@ -22,14 +22,15 @@ import {
 import { getUserById } from "../../services/userService";
 
 export const ResetPassword = () => {
-  const navigation = useNavigate();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
-  const decoded = parseJwt(token);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [token, setToken] = useState(null);
+  const [openAlert, setOpenAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
 
   const { formData, handleChange, resetForm, resetFields } = useForm({
-    email: decoded.email,
+    userId: userId,
     password: "",
     password2: "",
   });
@@ -37,29 +38,70 @@ export const ResetPassword = () => {
   const [errors, setErrors] = useState({
     password: "",
     password2: "",
+    general: "",
   });
 
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const tokenFromUrl = queryParams.get("token");
+
+    if (!tokenFromUrl) {
+      // Redirigir si no hay token
+      navigate("/login");
+    } else {
+      setToken(tokenFromUrl);
+      // Validar token con la API
+
+      validateToken(tokenFromUrl);
+    }
+  }, []);
+
+  const validateToken = async (token) => {
+    try {
+      const response = await validateResetToken(token);
+      if (!response.success) {
+        // Mostrar error si el token es inválido o expirado
+        showAlert(response.message || "Token inválido o expirado");
+        navigate("/login");
+      }
+
+      // Guardás también el userId o lo que te devuelva la API
+      setUserId(response.userId);
+    } catch (err) {
+      showAlert("Error al validar el token");
+      navigate("/login");
+    }
+  };
+
   const validateForm = () => {
+    const newErrors = [];
+
     if (!formData.password) newErrors.password = "La contraseña es obligatoria";
     if (!formData.password2) newErrors.password2 = "Confirme la contraseña";
 
     if (
+      Object.keys(newErrors).length === 0 &&
       formData.password &&
       formData.password2 &&
       formData.password != formData.password2
     )
-      newErrors.password2 = "Las contraseñas no pueden ser distintas";
+      newErrors.general = "Las contraseñas no pueden ser distintas";
 
-    if (formData.password)
-      newErrors.password = validatePasswordPolicy(formData.password);
+    if (Object.keys(newErrors).length === 0)
+      if (!validatePasswordPolicy(formData.password))
+        newErrors.general =
+          "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número";
+
+    setErrors(newErrors);
+
+    const isValid = Object.keys(newErrors).length === 0;
+
+    return isValid;
   };
 
   const validatePasswordPolicy = (password) => {
     const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/; // Mínimo 8 caracteres, una mayúscula y un número
-    return (
-      regex.test(password) ||
-      "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número"
-    );
+    return regex.test(password);
   };
 
   const handleSubmit = async (e) => {
@@ -68,11 +110,11 @@ export const ResetPassword = () => {
 
       if (!validateForm()) return;
 
-      isLoading(true);
+      setIsLoading(true);
 
       const user = {
-        email: email,
-        password: formData.password,
+        Id: userId,
+        Password: formData.password,
       };
 
       const response = await changePassword(user);
@@ -84,7 +126,7 @@ export const ResetPassword = () => {
     } catch (error) {
       setErrors({ email: error.message });
     } finally {
-      isLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -102,7 +144,7 @@ export const ResetPassword = () => {
           <Grid item sm={5}>
             <Typography>{formData.email}</Typography>
           </Grid>
-          <Grid item sm={3} sx={{ mt: 2 }}>
+          <Grid item sm={3} sx={{ mt: 4 }}>
             <TextField
               type="password"
               fullWidth
@@ -112,21 +154,31 @@ export const ResetPassword = () => {
               label="Contraseña"
             />
             {errors.password && (
-              <FormHelperText>{errors.password}</FormHelperText>
+              <FormHelperText error>{errors.password}</FormHelperText>
             )}
           </Grid>
           <Grid item sm={3} sx={{ mt: 2 }}>
             <TextField
               type="password"
               fullWidth
+              name="password2"
               label="Confirmar la contraseña"
               value={formData.password2 || ""}
               onChange={handleChange}
             />
             {errors.password2 && (
-              <FormHelperText>{errors.password2}</FormHelperText>
+              <FormHelperText error>{errors.password2}</FormHelperText>
             )}
           </Grid>
+
+          <Grid item xs={12} sx={{ mt: 2 }}>
+            {errors.general && (
+              <FormHelperText style={{ textAlign: "center" }} error>
+                {errors.general}
+              </FormHelperText>
+            )}
+          </Grid>
+
           <Grid item xs={12} sx={{ mt: 2 }}>
             <Button
               variant="contained"
@@ -139,7 +191,7 @@ export const ResetPassword = () => {
                 ) : null
               }
             >
-              {isLoading ? "Guardando..." : "Guardar"}
+              {isLoading ? "Cambiando..." : "Cambiar"}
             </Button>
           </Grid>
         </form>

@@ -75,7 +75,6 @@ export const TournamentsList = () => {
     getCategories().then(setCategories);
     getLocations().then(setLocations);
     getTournaments().then((data) => {
-      console.log(data);
       setdata(data);
     });
   }, []);

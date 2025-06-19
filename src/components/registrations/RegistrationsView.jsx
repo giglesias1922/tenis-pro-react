@@ -22,11 +22,10 @@ export const RegistrationsView = ({
   const [data, setdata] = useState([]);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
-  console.log("tournamentType", tournamentType);
+
   useEffect(() => {
     getRegistrations(tournamentId).then((data) => {
       setdata(data);
-      console.log(data);
     });
   }, [tournamentId]);
 

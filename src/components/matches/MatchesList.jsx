@@ -72,7 +72,7 @@ export const MatchesList = () => {
   const handleConfirmDelete = async () => {
     try {
       await deleteMatch(selectedId);
-      console.log(selectedId);
+
       // Recargar los datos después de la eliminación
       const updatedData = await getMatches();
       setdata(updatedData);

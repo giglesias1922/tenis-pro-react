@@ -1,75 +1,50 @@
 import config from "../../config";
+import axiosInstance from './axiosConfig';
+
 const API_URL = `${config.apiUrl}/registrations`;
-import {authorizedFetch} from "../helpers/fetchHelper.js"
 
 export const getRegistrations = async (tournamentId) => {
     try {
-
-        const response = await authorizedFetch(`${API_URL}/tournament/${tournamentId}`);
-        
-        if (!response.ok) {
-            throw new Error(`Error al obtener los torneos`);
-        }
-
-        return await response.json();
-        }
-        catch (error) {
+      const response = await axiosInstance.get(`${API_URL}/tournament/${tournamentId}`);
+      return response.data;
+    } catch (error) {
       console.error("Error en getRegistrations:", error);
       throw error;
-        
     }
-  };
+};
 
-  export const  getRegistratedUsers = async (tournamentId) => {
+export const getRegistratedUsers = async (tournamentId) => {
     try {
-      const response = await authorizedFetch(`${API_URL}/users/${tournamentId}`);
-  
-      if (!response.ok) {
-        throw new Error(`Error al obtener los jugadores inscriptos`);
-      }
-      
-      return await response.json();
+      const response = await axiosInstance.get(`${API_URL}/users/${tournamentId}`);
+      return response.data;
     } catch (error) {
       console.error("Error en getRegistratedUsers:", error);
       throw error;
     }
-  };  
+};
 
-  export const  getUsersToRegistration = async (categoryId, tournamentId) => {
+export const getUsersToRegistration = async (categoryId, tournamentId) => {
     try {
-      const response = await authorizedFetch(`${API_URL}/${categoryId}/${tournamentId}`);
-  
-      if (!response.ok) {
-        throw new Error(`Error al obtener los usuarios no registrados`);
-      }
-      
-      return await response.json();
+      const response = await axiosInstance.get(`${API_URL}/${categoryId}/${tournamentId}`);
+      return response.data;
     } catch (error) {
       console.error("Error en getUsersToRegistration:", error);
       throw error;
     }
-  };  
+};
 
-  // 🔹 Eliminar torneo
-  export const deleteRegistration = async (id) => {
+export const deleteRegistration = async (id) => {
     try {
-      const response = await authorizedFetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Error al eliminar la inscripción`);
-      }
-  
+      await axiosInstance.delete(`${API_URL}/${id}`);
     } catch (error) {
       console.error("Error en deleteRegistration:", error);
       throw error;
     }
-  };
+};
 
-  export const getRegistrationById = async (id) => {
+export const getRegistrationById = async (id) => {
     try {
-      const response = await authorizedFetch(`${API_URL}/${id}`);
+      const response = await axiosInstance.get(`${API_URL}/${id}`);
   
       if (!response.ok) {
         throw new Error(`Error al obtener la inscripción`);
@@ -82,23 +57,12 @@ export const getRegistrations = async (tournamentId) => {
     }
   };
 
-  // 🔹 Crear un torneo (Alta)
 export const createRegistration = async (data) => {
-    console.log(data);
-  try {
-    const response = await authorizedFetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error(`Error al crear la inscripción: ${errorMessage}`);
+    try {
+      const response = await axiosInstance.post(API_URL, data);
+      return response.data;
+    } catch (error) {
+      console.error("Error en createRegistration:", error);
+      throw error;
     }
-
-  } catch (error) {
-    console.error("Error en createRegistration:", error);
-    throw error;
-  }
 };

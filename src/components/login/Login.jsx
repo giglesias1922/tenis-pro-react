@@ -46,34 +46,34 @@ export const Login = () => {
   };
 
   const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      e.preventDefault();
-
       if (!validateForm()) return;
 
       setIsLoading(true);
+      setErrors({ general: "" });
 
       const resul = await loginUser(formData.userName, formData.password);
 
       if (resul.success) {
         login(resul.token);
-
-        console.log("user", user);
         navigate("/");
-        return;
       } else if (resul.errorCode === 5) {
-        // Mostrar alerta con botón para
         setIsLoading(false);
         setOpenAlertActivate(true);
       } else {
         setIsLoading(false);
         setErrors({ general: resul.errorDescription });
       }
-
-      return;
     } catch (error) {
       setIsLoading(false);
-      setErrors({ general: error.message });
+      if (error.response?.data?.errorCode === 2) {
+        setErrors({ general: "Credenciales inválidas" });
+      } else {
+        setErrors({ general: error.response?.data?.errorDescription || error.message });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 

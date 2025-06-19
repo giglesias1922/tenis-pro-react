@@ -23,6 +23,10 @@ import { Register } from "./login/Register.jsx";
 import { ResetPasswordRequest } from "./login/ResetPasswordRequest.jsx";
 import { ResetPassword } from "./login/ResetPassword.jsx";
 import { AlertSuccess } from "./Common/AlertSuccess.jsx";
+import { ErrorHandler } from "./Common/ErrorHandler.jsx";
+import { Ranking } from "./ranking/Ranking.jsx";
+import { ParameterList } from "./parameters/ParameterList.jsx";
+import { ParameterAdd } from "./parameters/ParameterAdd.jsx";
 
 const darkTheme = createTheme({
   palette: {
@@ -34,6 +38,7 @@ export const App = () => {
   return (
     <div>
       <AlertSuccess />
+      <ErrorHandler />
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
         <HeaderBar />
@@ -61,7 +66,10 @@ export const App = () => {
           <Route path="/login" element={<Login />} /> {/* Para editar */}
           <Route path="/register" element={<Register />} />{" "}
           <Route path="/resetpassword" element={<ResetPasswordRequest />} />{" "}
-          <Route path="/reset-password-form/:id" element={<ResetPassword />} />{" "}
+          <Route path="/reset-password-form" element={<ResetPassword />} />{" "}
+          <Route path="/ranking" element={<Ranking />} /> {/* Para editar */}
+          <Route path="/parameters" element={<ParameterList />} />{" "}
+          <Route path="/parameters/:id" element={<ParameterAdd />} />{" "}
         </Routes>
       </ThemeProvider>
     </div>

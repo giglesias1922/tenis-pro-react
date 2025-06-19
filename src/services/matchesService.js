@@ -1,93 +1,61 @@
 import config from "../../config";
+import axiosInstance from './axiosConfig';
+
 const API_URL = `${config.apiUrl}/matches`;
-import {authorizedFetch} from "../helpers/fetchHelper.js"
 
-
-export const getMatches = async () => {
+export const getMatches = async (tournamentId) => {
     try {
-
-        const response = await authorizedFetch(`${API_URL}`,{method:"GET"});
-        
-        if (!response.ok) {
-            throw new Error(`Error al obtener los matches`);
-        }
-        
-        const data = await response.json();
-
-        return data;
-        }
-        catch (error) {
+      const response = await axiosInstance.get(`${API_URL}/tournament/${tournamentId}`);
+      return response.data;
+    } catch (error) {
       console.error("Error en getMatches:", error);
       throw error;
-        
     }
-  };
+};
 
-  // 🔹 Eliminar usuario
-  export const deleteMatch = async (id) => {
+// 🔹 Eliminar usuario
+export const deleteMatch = async (id) => {
     try {
-      const response = await authorizedFetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Error al eliminar el match`);
-      }
-  
+      await axiosInstance.delete(`${API_URL}/${id}`);
     } catch (error) {
       console.error("Error en deleteMatch:", error);
       throw error;
     }
-  };
+};
 
-  // 🔹 Crear un Category (Alta)
-export const createMatch= async (data) => {
-  try {
-    const response = await authorizedFetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error(`Error al crear el match: ${errorMessage}`);
+// 🔹 Crear un Category (Alta)
+export const createMatch = async (data) => {
+    try {
+      const response = await axiosInstance.post(API_URL, data);
+      return response.data;
+    } catch (error) {
+      console.error("Error en createMatch:", error);
+      throw error;
     }
-
-  } catch (error) {
-    console.error("Error en createMatch:", error);
-    throw error;
-  }
 };
 
 // 🔹 Obtener un usuario por ID
 export const getMatchById = async (id) => {
-  try {
-    const response = await authorizedFetch(`${API_URL}/${id}`,{method:"GET"});
-
-    if (!response.ok) {
-      throw new Error(`Error al obtener el match`);
+    try {
+      const response = await axiosInstance.get(`${API_URL}/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error en getMatchById:", error);
+      throw error;
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error("Error en getMatchById:", error);
-    throw error;
-  }
 };
-
 
 export const getMatchHistory = async (id) => {
   try {
     
-    const response = await authorizedFetch(`${API_URL}/${id}/history`,{method:"GET"});
+    const response = await axiosInstance.get(`${API_URL}/${id}/history`);
 
     if (!response.ok) {
       throw new Error(`Error al obtener la historia del match`);
     }
 
-    const data = await response.json();
-    console.log("getMatchHistory",data);
+    const data = await response.data;
+    
     return data;
   } catch (error) {
     console.error("Error en getMatchHistory:", error);
@@ -95,43 +63,21 @@ export const getMatchHistory = async (id) => {
   }
 };
 
-
 // 🔹 Actualizar usuario (Editar)
 export const updateMatch = async (id, data) => {
-  try {
-    const response = await authorizedFetch(`${API_URL}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al actualizar el match`);
+    try {
+      await axiosInstance.put(`${API_URL}/${id}`, data);
+    } catch (error) {
+      console.error("Error en updateMatch:", error);
+      throw error;
     }
-
-    
-  } catch (error) {
-    console.error("Error en updateMatch:", error);
-    throw error;
-  }
 };
 
 export const addResult = async (id, data) => {
-  console.log("data",data)
-  try {
-    const response = await authorizedFetch(`${API_URL}/${id}/result`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al cargar resultado al match`);
+    try {
+      await axiosInstance.put(`${API_URL}/${id}/result`, data);
+    } catch (error) {
+      console.error("Error en addResult:", error);
+      throw error;
     }
-
-    
-  } catch (error) {
-    console.error("Error en addResult:", error);
-    throw error;
-  }
 };

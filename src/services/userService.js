@@ -1,115 +1,75 @@
 import config from "../../config";
-import {authorizedFetch} from "../helpers/fetchHelper.js"
+import axiosInstance from './axiosConfig';
+
 const API_URL = `${config.apiUrl}/users`;
 
-
 export const getUsers = async () => {
-
     try {
-      const response = await authorizedFetch(`${API_URL}`);
-        
-      if (!response.ok) {
-          throw new Error(`Error al obtener los usuarios`);
-      }
-
-      return await response.json();
-      }
-      catch (error) {
-        console.error("Error en getUsers:", error);
-        throw error;
-        
+      const response = await axiosInstance.get(API_URL);
+      return response.data;
+    } catch (error) {
+      console.error("Error en getUsers:", error);
+      throw error;
     }
-  };
+};
 
 // 🔹 Crear un usuario (Alta)
-export const createUser = async (userData) => {
+export const createUser = async (user) => {
+
     try {
-      const response = await authorizedFetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }, // opcional si ya lo pones por defecto en authorizedFetch
-        body: JSON.stringify(userData),
-      });
-  
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(`Error al crear usuario: ${errorMessage}`);
+      const response = await axiosInstance.post(API_URL, user);
+      
+      if (!response.status) {
+        // Error HTTP, algo salió mal en el servidor
+        throw new Error(response.data.message || 'Error inesperado');
       }
-  
-      return await response.json();
+
+      return response.data;
     } catch (error) {
       console.error("Error en createUser:", error);
       throw error;
     }
-  };
-  
-  
+};
 
-  // 🔹 Obtener un usuario por ID
-  export const getUserById = async (id) => {
+// 🔹 Obtener un usuario por ID
+export const getUserById = async (id) => {
     try {
-      console.log(`${API_URL}/${id}`);
-      const response = await authorizedFetch(`${API_URL}/${id}`,{ method: "GET" });
-  
-      if (!response.ok) {
-        throw new Error(`Error al obtener usuario`);
-      }
-      
-      return await response.json();
+      const response = await axiosInstance.get(`${API_URL}/${id}`);
+      return response.data;
     } catch (error) {
       console.error("Error en getUserById:", error);
       throw error;
     }
-  };
+};
 
-  // 🔹 Obtener un usuario por ID
-  export const getUsersByCategory = async (categoryId) => {
+// 🔹 Obtener un usuario por ID
+export const getUsersByCategory = async (categoryId) => {
     try {
-      const response = await authorizedFetch(`${API_URL}/Category/${categoryId}`,{ method: "GET" });
-  
-      if (!response.ok) {
-        throw new Error(`Error al obtener usuarios por categoria`);
-      }
-      
-      const data =  await response.json();
-      
-      return data;
+      const response = await axiosInstance.get(`${API_URL}/Category/${categoryId}`);
+      return response.data;
     } catch (error) {
       console.error("Error en getUsersByCategory:", error);
       throw error;
     }
-  };
-  
-  // 🔹 Actualizar usuario (Editar)
-  export const updateUser = async (id, userData) => {
+};
+
+// 🔹 Actualizar usuario (Editar)
+export const updateUser = async (id, user) => {
     try {
-      const response = await authorizedFetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Error al actualizar usuario`);
-      }
-  
-      
+      const response = await axiosInstance.put(`${API_URL}/${id}`, user);
+      return response.data;
     } catch (error) {
       console.error("Error en updateUser:", error);
       throw error;
     }
-  };
-  
-  // 🔹 Eliminar usuario
-  export const deleteUser = async (id) => {
+};
+
+// 🔹 Eliminar usuario
+export const deleteUser = async (id) => {
     try {
-      const response = await authorizedFetch(`${API_URL}/${id}`, {method: "DELETE"});
-  
-      if (!response.ok) {
-        throw new Error(`Error al eliminar usuario`);
-      }
-  
+      await axiosInstance.delete(`${API_URL}/${id}`);
     } catch (error) {
       console.error("Error en deleteUser:", error);
       throw error;
     }
-  };
+};

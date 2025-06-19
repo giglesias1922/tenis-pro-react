@@ -3,9 +3,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { IconButton, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { green, grey } from "@mui/material/colors";
-import HideSourceIcon from "@mui/icons-material/HideSource";
+import {
+  getParameters,
+  deleteParameter,
+} from "../../services/parametersService.js";
 import {
   Fab,
   Container,
@@ -16,51 +17,57 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
-import { getUsers, deleteUser } from "../../services/userService.js";
 
-export const UsersList = () => {
+export const ParameterList = () => {
   const [data, setdata] = useState([]);
   const navigate = useNavigate();
   const [openConfirm, setOpenConfirm] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
 
   const handleAddClick = () => {
-    navigate("/users/new"); // Redirige a la ruta del componente UserNew
+    navigate("/parameters/new");
   };
 
   const handleEditClick = (id) => {
-    navigate(`/users/${id}`);
+    navigate(`/parameters/${id}`);
   };
 
   const handleDeleteClick = (id) => {
-    setSelectedUserId(id);
+    setSelectedId(id);
     setOpenConfirm(true);
   };
 
   const handleConfirmDelete = async () => {
     try {
-      await deleteUser(selectedUserId);
+      await deleteParameter(selectedId);
       // Recargar los datos después de la eliminación
-      const updatedData = await getUsers();
+      const updatedData = await getParameters();
       setdata(updatedData);
     } catch (error) {
-      console.error("Error al eliminar el usuario:", error);
+      console.error("Error al eliminar el parametro:", error);
     } finally {
       setOpenConfirm(false);
-      setSelectedUserId(null);
+      setSelectedId(null);
     }
   };
 
   const handleCancelDelete = () => {
     setOpenConfirm(false);
-    setSelectedUserId(null);
+    setSelectedId(null);
   };
 
   useEffect(() => {
-    getUsers().then(setdata);
+    getParameters().then((data) => {
+      setdata(data);
+    });
   }, []);
 
   // Columnas de la grilla
@@ -73,50 +80,33 @@ export const UsersList = () => {
       minWidth: 50,
       maxWidth: 50,
       renderCell: (params) => (
-        <>
-          <IconButton
-            color="primary"
-            size="small"
-            onClick={() => handleEditClick(params.row.id)}
-          >
-            <EditIcon />
-          </IconButton>
-        </>
+        <IconButton
+          color="primary"
+          size="small"
+          onClick={() => handleEditClick(params.row.id)}
+        >
+          <EditIcon />
+        </IconButton>
       ),
     },
-
+    { field: "id", headerName: "Id", flex: 1 },
+    { field: "value", headerName: "Valor", flex: 1 },
+    { field: "description", headerName: "Descripción", flex: 1 },
     {
-      field: "name",
-      headerName: "Nombre",
+      field: "modifDate",
+      headerName: "Fecha modif",
       flex: 1,
+      renderCell: (params) => {
+        console.log("params", params);
+        console.log(params.value);
+        if (!params.value) return ""; // si no hay fecha, mostrar vacío
+        const date = new Date(params.value);
+        return new Intl.DateTimeFormat("es-ES", {
+          timeZone: "UTC",
+        }).format(date);
+      },
     },
-    {
-      field: "lastName",
-      headerName: "Apellido",
-      flex: 1,
-    },
-    {
-      field: "phone1",
-      headerName: "Teléfono",
-      flex: 1,
-    },
-    {
-      field: "email",
-      headerName: "Email",
-      flex: 1,
-    },
-    {
-      field: "status",
-      headerName: "Activo",
-      flex: 1,
-      align: "center",
-      renderCell: (params) =>
-        params.value ? (
-          <CheckCircleIcon sx={{ color: green[500] }} />
-        ) : (
-          <HideSourceIcon sx={{ color: grey[500] }} />
-        ),
-    },
+    { field: "modifUser", headerName: "Usuario modif", flex: 1 },
     {
       field: "delete",
       headerName: "",
@@ -125,16 +115,14 @@ export const UsersList = () => {
       minWidth: 70,
       maxWidth: 70,
       renderCell: (params) => (
-        <>
-          <IconButton
-            color="error"
-            size="small"
-            onClick={() => handleDeleteClick(params.row.id)}
-            sx={{ marginLeft: 1 }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </>
+        <IconButton
+          color="error"
+          size="small"
+          onClick={() => handleDeleteClick(params.row.id)}
+          sx={{ marginLeft: 1 }}
+        >
+          <DeleteIcon />
+        </IconButton>
       ),
     },
   ];
@@ -146,7 +134,7 @@ export const UsersList = () => {
         sx={{ padding: 3, marginTop: 4, position: "relative" }}
       >
         <Typography variant="h5" gutterBottom>
-          Usuarios
+          Torneos
         </Typography>
 
         <div style={{ height: 400, width: "100%" }}>
@@ -177,7 +165,7 @@ export const UsersList = () => {
           Confirmar Eliminación
         </DialogTitle>
         <DialogContent>
-          ¿Estás seguro de que deseas eliminar este usuario?
+          ¿Estás seguro de que deseas eliminar el parámetro?
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelDelete} color="primary">

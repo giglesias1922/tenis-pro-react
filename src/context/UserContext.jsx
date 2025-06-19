@@ -26,7 +26,9 @@ export const UserProvider = ({ children }) => {
 
   const login = (token) => {
     localStorage.setItem("token", token);
+
     const decoded = parseJwt(token);
+
     if (decoded) {
       setUser({
         id: decoded.userId,
@@ -43,6 +45,7 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem("token");
     setUser(null);
     setIsAuthenticated(false);
+    window.location.href = "/login"; //  redirige al login
   };
 
   return (
