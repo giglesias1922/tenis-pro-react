@@ -19,7 +19,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown"; // Agregado p
 
 const pages = [
   { id: 1, label: "Usuarios", path: "/users", auth: true },
-  { id: 2, label: "Torneos", path: "/tournaments", auth: false },
+  { id: 2, label: "Torneos", path: "/tournaments", auth: true },
   { id: 3, label: "Inscripciones", path: "/registrations", auth: true },
   { id: 4, label: "Partidos", path: "/matches", auth: true },
   { id: 5, label: "Mantenimiento", path: "", auth: true },
@@ -34,6 +34,9 @@ const pages = [
     auth: true,
     parentId: 5,
   },
+
+  //menu publico
+  { id: 9, label: "Cartelera", path: "/tournaments/board", auth: false },
 ];
 
 const settings = [

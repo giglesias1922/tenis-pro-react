@@ -9,9 +9,12 @@ import {
 } from "../../services/tournamentsService";
 import { getCategories } from "../../services/categoriesService";
 import { getLocations } from "../../services/locationsService";
+import { uploadImageToCloudinary } from "../../helpers/imageUploadHelper";
 import { IconButton, Box, Avatar, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
+import ImageIcon from "@mui/icons-material/Image";
+import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import {
   TextField,
   Switch,
@@ -37,6 +40,8 @@ export const TournamentsAdd = () => {
   const isEdit = id !== "new" && id !== undefined;
   const [tournamentTypes, setTournamentTypes] = useState([]);
   const imageInputRef = useRef();
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
 
   const { formData, setFormData, handleChange, resetForm, resetFields } =
     useForm({
@@ -83,9 +88,12 @@ export const TournamentsAdd = () => {
           locationId: data.locationId || "",
           categoryId: data.categoryId || "",
           tournamentType: data.tournamentType || "",
+          image: data.image || "",
         });
 
         setStatus(data.status);
+        setSelectedImageFile(null);
+        setImagePreview("");
       });
     }
   }, [id, isEdit]);
@@ -93,11 +101,8 @@ export const TournamentsAdd = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      setSelectedImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
@@ -150,33 +155,54 @@ export const TournamentsAdd = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const tournament = {
-      id: id,
-      description: formData.description,
-      closeDate: formData.closeDate
-        ? new Date(formData.closeDate).toISOString()
-        : null,
-      initialDate: formData.initialDate
-        ? new Date(formData.initialDate).toISOString()
-        : null,
-      endDate: formData.endDate
-        ? new Date(formData.endDate).toISOString()
-        : null,
-      locationId: formData.locationId,
-      categoryId: formData.categoryId,
-      tournamentType: formData.tournamentType,
-      status: isEdit ? Status : 0,
-    };
-
     try {
+      let tournament = {
+        id: id,
+        description: formData.description,
+        closeDate: formData.closeDate
+          ? new Date(formData.closeDate).toISOString()
+          : null,
+        initialDate: formData.initialDate
+          ? new Date(formData.initialDate).toISOString()
+          : null,
+        endDate: formData.endDate
+          ? new Date(formData.endDate).toISOString()
+          : null,
+        locationId: formData.locationId,
+        categoryId: formData.categoryId,
+        tournamentType: formData.tournamentType,
+        status: isEdit ? Status : 0,
+        image: formData.image || "",
+      };
+
       if (isEdit) {
+        // Si estamos editando y hay una nueva imagen
+        if (selectedImageFile) {
+          const imageUrl = await uploadImageToCloudinary(selectedImageFile, id);
+          tournament.image = imageUrl;
+        }
         await updateTournament(id, tournament);
       } else {
-        await createTournament(tournament);
+        // Si es alta, primero creamos el torneo
+        const response = await createTournament(tournament);
+        
+        if (selectedImageFile) {
+          // Ahora subimos la imagen con el ID del torneo creado
+          const tournamentId = response.id || response.data?.id; // Ajusta según tu API
+          const imageUrl = await uploadImageToCloudinary(selectedImageFile, tournamentId);
+          
+          // Actualizamos el torneo con la imagen
+          await updateTournament(tournamentId, {
+            ...tournament,
+            image: imageUrl,
+          });
+        }
       }
+
       navigate("/tournaments");
     } catch (error) {
       console.error("Error al guardar el torneo:", error);
+      // Aquí podrías mostrar un mensaje de error al usuario
     }
   };
 
@@ -322,30 +348,60 @@ export const TournamentsAdd = () => {
 
             {/* Imagen Banner */}
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
-                <Button
-                  variant="contained"
-                  component="span"
-                  onClick={() => imageInputRef.current.click()}
-                  sx={{ mb: 1 }}
-                >
-                  Banner
-                </Button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  ref={imageInputRef}
-                  onChange={handleImageChange}
-                />
-                {formData.image && (
-                  <Box
-                    component="img"
-                    src={formData.image}
-                    alt="Banner del torneo"
-                    sx={{ width: '100%', maxWidth: 400, height: 'auto', borderRadius: 2, mt: 1, boxShadow: 2 }}
+              <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+                <Box sx={{ position: "relative" }}>
+                  <Avatar
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      borderRadius: 1,
+                      backgroundColor: "#2c3e50",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {imagePreview || formData.image ? (
+                      <img
+                        src={imagePreview || formData.image}
+                        alt="Imagen del torneo"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <InsertPhotoIcon sx={{ fontSize: 60, color: "#bdbdbd" }} />
+                    )}
+                  </Avatar>
+                  <Tooltip title="Cambiar imagen">
+                    <IconButton
+                      sx={{
+                        position: "absolute",
+                        bottom: 0,
+                        right: 0,
+                        backgroundColor: "primary.main",
+                        color: "white",
+                        "&:hover": {
+                          backgroundColor: "primary.dark",
+                        },
+                        width: 32,
+                        height: 32,
+                      }}
+                      onClick={() => imageInputRef.current.click()}
+                    >
+                      <EditIcon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </Tooltip>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    ref={imageInputRef}
+                    onChange={handleImageChange}
                   />
-                )}
+                </Box>
               </Box>
             </Grid>
             <Grid item xs={12}>

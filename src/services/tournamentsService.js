@@ -24,6 +24,17 @@ export const getTournamentTypes = async () => {
     }
 };
 
+export const getTournamentsBoard = async () => {
+  try {
+    const response = await axiosInstance.get(`${API_URL}/board`);
+    return response.data;
+  } catch (error) {
+    console.error("Error en getTournamentsBoard:", error);
+    throw error;
+  }
+};
+
+
 export const getTournamentStatus = async () => {
     try {
       const response = await axiosInstance.get(`${API_URL}/tournament-status`);

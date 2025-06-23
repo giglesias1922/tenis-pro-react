@@ -26,6 +26,7 @@ import {
   FormControl,
   FormHelperText,
 } from "@mui/material";
+import { uploadImageToCloudinary } from "../../helpers/imageUploadHelper";
 
 export const UserAdd = () => {
   const navigate = useNavigate();
@@ -69,60 +70,74 @@ export const UserAdd = () => {
     }
   };
 
-  // Función que se ejecuta al enviar el formulario
   const handleSubmit = async (event) => {
-    event?.preventDefault(); // Evita recargar la página
+    event?.preventDefault();
 
     if (!validate()) return;
 
-    let imageUrl = formData.image;
-
-    // if(imageUrl)
-    // {
-    const token = localStorage.getItem("token");
-    const decoded = jwt_decode(token);
-    const userId = decoded.id || decoded.userId || decoded.sub; // Ajusta según tu token
-
-    imageUrl = await uploadImageToCloudinary(selectedImageFile, userId);
-    // }
-
-    const user = {
-      id: id,
-      name: formData.name,
-      lastName: formData.lastName,
-      phone1: formData.phone || "",
-      comment: formData.comment,
-      email: formData.email,
-      image: imageUrl || "",
-      profileId: formData.profileId,
-      categoryId: formData.categoryId,
-      birthdate: formData.birthDate
-        ? new Date(formData.birthDate).toISOString()
-        : null,
-      status: 1, // El valor de "active" es false por defecto
-    };
-
     try {
-      var response;
+      let user = {
+        id: id,
+        name: formData.name,
+        lastName: formData.lastName,
+        phone1: formData.phone || "",
+        comment: formData.comment,
+        email: formData.email,
+        image: formData.image, // Mantenemos la imagen existente por ahora
+        profileId: formData.profileId,
+        categoryId: formData.categoryId,
+        birthdate: formData.birthDate
+          ? new Date(formData.birthDate).toISOString()
+          : null,
+        status: 1,
+      };
+
+      let response;
+      let userId;
+      let imageUrl;
 
       if (isEdit) {
+        console.log("selectedImageFile", selectedImageFile);
+        // Si estamos editando, primero subimos la imagen con el ID existente
+        if (selectedImageFile) {
+          const imageUrl = await uploadImageToCloudinary(selectedImageFile, id);
+          user.image = imageUrl;
+        }
+
+        console.log("imageUrl", imageUrl);
+
         response = await updateUser(id, user);
       } else {
+        // Si es alta, primero creamos el usuario sin imagen
         response = await createUser(user);
+
+        if (response.success && selectedImageFile) {
+          // Ahora que tenemos el ID, subimos la imagen y actualizamos el usuario
+          userId = response.data.id; // Ajusta esto según la respuesta de tu API
+          const imageUrl = await uploadImageToCloudinary(
+            selectedImageFile,
+            userId
+          );
+
+          console.log("imageUrl", imageUrl);
+          // Actualizamos el usuario con la imagen
+          await updateUser(userId, { ...user, image: imageUrl });
+        }
       }
 
-      if (response.success) navigate("/users");
-      else {
+      if (response.success) {
+        navigate("/users");
+      } else {
         const newErrors = {};
         newErrors.email = response.message;
         setErrors(newErrors);
       }
     } catch (error) {
       console.error("Error al guardar el usuario:", error);
+      // Aquí podrías mostrar un mensaje de error más específico
+      // Por ejemplo, si falló la subida de la imagen vs si falló la creación del usuario
     }
   };
-
-  const location = useLocation();
 
   const handleBackClick = () => {
     navigate("/users");
@@ -174,6 +189,9 @@ export const UserAdd = () => {
           profileId: user.profileId,
           comment: user.comment,
         });
+
+        setSelectedImageFile(null);
+        setImagePreview("");
       });
     }
   }, [id]);

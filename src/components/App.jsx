@@ -27,49 +27,59 @@ import { ErrorHandler } from "./Common/ErrorHandler.jsx";
 import { Ranking } from "./ranking/Ranking.jsx";
 import { ParameterList } from "./parameters/ParameterList.jsx";
 import { ParameterAdd } from "./parameters/ParameterAdd.jsx";
+import { TournamentBoard } from "./tournaments/TournamentBoard.jsx";
+import { deepmerge } from "@mui/utils";
 
+// Crear el tema base oscuro
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
+    background: {
+      default: "#121212",
+      paper: "#1e1e1e",
+    },
+    primary: {
+      main: "#90caf9",
+    },
   },
 });
+
+// Combinar el tema oscuro con el tema del DataGrid
+const theme = createTheme(
+  deepmerge(darkTheme, { components: DataGridTheme.components })
+);
 
 export const App = () => {
   return (
     <div>
       <AlertSuccess />
       <ErrorHandler />
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider theme={theme}>
         <CssBaseline />
         <HeaderBar />
         <Routes>
-          <Route path="/" element={<Home />} />{" "}
-          <Route path="/*" element={<Home />} />{" "}
-          {/* Página principal por defecto */}
-          <Route path="/users" element={<UsersList />} />{" "}
-          <Route path="/users/:id" element={<UserAdd />} />{" "}
-          {/* Ruta para categorias */}
-          <Route path="/categories" element={<CategoriesList />} />{" "}
+          <Route path="/" element={<Home />} />
+          <Route path="/*" element={<Home />} />
+          <Route path="/users" element={<UsersList />} />
+          <Route path="/users/:id" element={<UserAdd />} />
+          <Route path="/categories" element={<CategoriesList />} />
           <Route path="/categories/new" element={<CategoriesAdd />} />
-          <Route path="/categories/:id" element={<CategoriesAdd />} />{" "}
-          {/* Ruta para torneos */}
+          <Route path="/categories/:id" element={<CategoriesAdd />} />
           <Route path="/tournaments" element={<TournamentsList />} />
           <Route path="/tournaments/new" element={<TournamentsAdd />} />
-          <Route path="/tournaments/:id" element={<TournamentsAdd />} />{" "}
-          {/* Ruta para registrations */}
+          <Route path="/tournaments/:id" element={<TournamentsAdd />} />
+          <Route path="/tournaments/board" element={<TournamentBoard />} />
           <Route path="/registrations" element={<RegistrationsAdd />} />
-          {/* Ruta para matches */}
           <Route path="/matches" element={<MatchesList />} />
           <Route path="/matches/new" element={<MatchesAdd />} />
-          <Route path="/matches/:id" element={<MatchesAdd />} />{" "}
-          {/* Para editar */}
-          <Route path="/login" element={<Login />} /> {/* Para editar */}
-          <Route path="/register" element={<Register />} />{" "}
-          <Route path="/resetpassword" element={<ResetPasswordRequest />} />{" "}
-          <Route path="/reset-password-form" element={<ResetPassword />} />{" "}
-          <Route path="/ranking" element={<Ranking />} /> {/* Para editar */}
-          <Route path="/parameters" element={<ParameterList />} />{" "}
-          <Route path="/parameters/:id" element={<ParameterAdd />} />{" "}
+          <Route path="/matches/:id" element={<MatchesAdd />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/resetpassword" element={<ResetPasswordRequest />} />
+          <Route path="/reset-password-form" element={<ResetPassword />} />
+          <Route path="/ranking" element={<Ranking />} />
+          <Route path="/parameters" element={<ParameterList />} />
+          <Route path="/parameters/:id" element={<ParameterAdd />} />
         </Routes>
       </ThemeProvider>
     </div>
