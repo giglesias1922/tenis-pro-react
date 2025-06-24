@@ -77,11 +77,11 @@ export const RegistrationsAdd = () => {
 
     const player1 = usersList.find((u) => u.id === formData.player1);
 
-    if (tournamentType === 0 && player1) {
+    if (tournamentType === 1 && player1) {
       displayName = `${player1.name} ${player1.lastName}`;
     }
 
-    if (tournamentType === 1 && player1) {
+    if (tournamentType === 2 && player1) {
       const player2 = usersList.find((u) => u.id === formData.player2);
 
       if (player2) {
@@ -104,13 +104,13 @@ export const RegistrationsAdd = () => {
       newErrors.tournamentId = "Selecciona un torneo";
     }
 
-    if (tournamentType === 0) {
+    if (tournamentType === 1) {
       if (!formData.player1) {
         newErrors.player1 = "Selecciona un jugador";
       }
     }
 
-    if (tournamentType === 1) {
+    if (tournamentType === 2) {
       if (!formData.player1 || !formData.player2) {
         newErrors.player2 = "Selecciona ambos jugadores";
       } else if (formData.player1 === formData.player2) {
@@ -221,7 +221,7 @@ export const RegistrationsAdd = () => {
               </FormControl>
             </Grid>
 
-            {tournamentType === 1 && (
+            {tournamentType === 2 && (
               <Grid item xs={12}>
                 <FormControl fullWidth>
                   <InputLabel id="player2-label">Jugador 2</InputLabel>

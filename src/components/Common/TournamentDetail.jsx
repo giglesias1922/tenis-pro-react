@@ -30,7 +30,7 @@ export const TournamentDetail = ({ tournamentId }) => {
   return (
     <>
       <Grid item xs={12} sm={12}>
-        <Card sx={{ backgroundColor: "#f5f5f5" }}>
+        <Card>
           <CardContent>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
               <Typography sx={{ color: "text.secondary" }}>Sede:</Typography>

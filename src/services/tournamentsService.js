@@ -102,3 +102,23 @@ export const updateTournament = async (id, data) => {
       throw error;
     }
 };
+
+export const closeRegistrations = async (tournamentId) => {
+    try {
+      const response = await axiosInstance.post(`${API_URL}/${tournamentId}/close-registrations`);
+      return response.data;
+    } catch (error) {
+      console.error("Error en closeRegistrations:", error);
+      throw error;
+    }
+};
+
+export const generateDraw = async (tournamentId) => {
+    try {
+      const response = await axiosInstance.post(`${API_URL}/${tournamentId}/generate-draw`);
+      return response.data;
+    } catch (error) {
+      console.error("Error en generateDraw:", error);
+      throw error;
+    }
+};
