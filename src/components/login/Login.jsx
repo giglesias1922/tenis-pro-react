@@ -70,7 +70,9 @@ export const Login = () => {
       if (error.response?.data?.errorCode === 2) {
         setErrors({ general: "Credenciales inválidas" });
       } else {
-        setErrors({ general: error.response?.data?.errorDescription || error.message });
+        setErrors({
+          general: error.response?.data?.errorDescription || error.message,
+        });
       }
     } finally {
       setIsLoading(false);
@@ -127,47 +129,51 @@ export const Login = () => {
         </Typography>
 
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sx={{ mt: 3 }}>
+          <Grid container spacing={2} direction="column">
+            {/* EMAIL */}
+            <Grid item>
               <TextField
+                fullWidth
                 id="userName"
                 name="userName"
                 label="Email"
-                type="text"
                 value={formData.userName}
                 onChange={handleChange}
-                fullWidth
-              ></TextField>
+              />
               {errors.userName && (
                 <FormHelperText error>{errors.userName}</FormHelperText>
               )}
             </Grid>
-            <Grid item xs={12} sx={{ mt: 3 }}>
+
+            {/* CONTRASEÑA */}
+            <Grid item>
               <TextField
+                fullWidth
                 name="password"
                 id="password"
                 label="Contraseña"
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                fullWidth
-              ></TextField>
+              />
               {errors.password && (
                 <FormHelperText error>{errors.password}</FormHelperText>
               )}
             </Grid>
-            <Grid item xs={12} container justifyContent="center">
+
+            {/* ERROR GENERAL */}
+            <Grid item sx={{ display: "flex", justifyContent: "center" }}>
               {errors.general && (
-                <FormHelperText error sx={{ typography: "body1" }}>
-                  {errors.general}
-                </FormHelperText>
+                <FormHelperText error>{errors.general}</FormHelperText>
               )}
             </Grid>
-            <Grid item xs={12}>
+
+            {/* BOTÓN */}
+            <Grid item>
               <Button
+                fullWidth
                 variant="contained"
                 type="submit"
-                fullWidth
                 disabled={isLoading}
                 startIcon={
                   isLoading ? (
@@ -178,27 +184,21 @@ export const Login = () => {
                 {isLoading ? "Cargando..." : "Iniciar sesión"}
               </Button>
             </Grid>
+
+            {/* LINKS ADICIONALES */}
+            <Grid item sx={{ textAlign: "center" }}>
+              ¿No tenés cuenta?{" "}
+              <Link href="/register" underline="hover" sx={{ ml: 1 }}>
+                [Registrate]
+              </Link>
+            </Grid>
+            <Grid item sx={{ textAlign: "center" }}>
+              <Link href="/resetpassword" underline="hover">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </Grid>
           </Grid>
         </form>
-        <Grid
-          item
-          xs={12}
-          sx={{ display: "flex", mt: 3, justifyContent: "center" }}
-        >
-          ¿No tenés cuenta?
-          <Link href="/register" underline="hover" sx={{ ml: 1 }}>
-            [Registrate]
-          </Link>
-        </Grid>
-        <Grid
-          item
-          xs={12}
-          sx={{ display: "flex", mt: 3, justifyContent: "center" }}
-        >
-          <Link href="/resetpassword" underline="hover">
-            ¿Olvidaste tu contraseña?
-          </Link>
-        </Grid>
       </Paper>
 
       <Dialog

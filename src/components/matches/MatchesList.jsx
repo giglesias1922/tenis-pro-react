@@ -201,9 +201,11 @@ export const MatchesList = () => {
           <DataGrid
             rows={data}
             columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5, 10, 20]}
-            disableSelectionOnClick
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 25, page: 0 },
+              },
+            }}
           />
         </div>
 

@@ -60,6 +60,12 @@ export const getRegistrationById = async (id) => {
 export const createRegistration = async (data) => {
     try {
       const response = await axiosInstance.post(API_URL, data);
+
+      if (!response.status) {
+        // Error HTTP, algo salió mal en el servidor
+        throw new Error(response.data.message || 'Error inesperado');
+      }
+      
       return response.data;
     } catch (error) {
       console.error("Error en createRegistration:", error);

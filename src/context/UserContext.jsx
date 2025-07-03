@@ -11,7 +11,8 @@ export const UserProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     if (token) {
       const decoded = parseJwt(token);
-      if (decoded) {
+      const now = Date.now() / 1000; // en segundos
+      if (decoded && decoded.exp && decoded.exp > now) {
         setUser({
           id: decoded.userId,
           name: decoded.unique_name,

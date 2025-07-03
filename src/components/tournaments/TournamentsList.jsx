@@ -3,10 +3,13 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import LockIcon from "@mui/icons-material/Lock";
-import { IconButton, Box } from "@mui/material";
+import PersonIcon from "@mui/icons-material/Person";
+import CloseIcon from "@mui/icons-material/Close";
+import { IconButton, Box, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { getCategories } from "../../services/categoriesService";
 import { getLocations } from "../../services/locationsService";
+import { RegistrationsView } from "../registrations/RegistrationsView";
 import {
   Fab,
   Container,
@@ -26,6 +29,7 @@ import {
   FormControlLabel,
   Alert,
   CircularProgress,
+  FormHelperText,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
@@ -54,17 +58,31 @@ export const TournamentsList = () => {
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState(null);
 
+  // Estados para la configuración del draw
+  const [drawConfig, setDrawConfig] = useState({
+    includePlata: false,
+    playersPerZone: 4,
+    qualifiersPerZone: 2,
+  });
+
+  // Estados para errores de validación
+  const [drawValidationErrors, setDrawValidationErrors] = useState({});
+
   // Estados para cerrar inscripciones
   const [openCloseDialog, setOpenCloseDialog] = useState(false);
   const [closing, setClosing] = useState(false);
   const [closeError, setCloseError] = useState(null);
 
+  // Estados para el modal de inscripciones
+  const [openRegistrationsModal, setOpenRegistrationsModal] = useState(false);
+  const [selectedTournamentForRegistrations, setSelectedTournamentForRegistrations] = useState(null);
+
   const handleAddClick = () => {
     navigate("/tournaments/new");
   };
 
-  const handleEditClick = (id) => {
-    navigate(`/tournaments/${id}`);
+  const handleEditClick = (tournamentId) => {
+    navigate(`/tournaments/${tournamentId}`);
   };
 
   const handleDeleteClick = (id) => {
@@ -112,8 +130,23 @@ export const TournamentsList = () => {
       // Obtener información completa del torneo
       const tournamentData = await getTournamentById(tournament.id);
       setSelectedTournament(tournamentData);
+
+      // Calcular valores iniciales
+      const initialPlayersPerZone = tournamentData.playersPerZone || 4;
+      const initialQualifiersPerZone = tournamentData.qualifiersPerZone || 2;
+
+      // Inicializar configuración con valores del torneo o por defecto
+      setDrawConfig({
+        includePlata: tournamentData.includePlata || false,
+        playersPerZone: initialPlayersPerZone,
+        qualifiersPerZone: initialQualifiersPerZone,
+      });
+
       setOpenGenerateDialog(true);
       setGenerateError(null);
+
+      // Validar configuración inicial
+      setTimeout(() => validateDrawConfig(), 100);
     } catch (error) {
       console.error("Error al obtener información del torneo:", error);
     }
@@ -121,10 +154,19 @@ export const TournamentsList = () => {
 
   const handleConfirmGenerate = async () => {
     try {
+      // Validar antes de generar
+      if (!validateDrawConfig()) {
+        setGenerateError(
+          "Por favor, corrige los errores de validación antes de generar el draw"
+        );
+        return;
+      }
+
       setGenerating(true);
       setGenerateError(null);
 
-      await generateDraw(selectedTournament.id);
+      // Enviar la configuración junto con el ID del torneo
+      await generateDraw(selectedTournament.id, drawConfig);
 
       // Recargar los datos después de generar el draw
       const updatedData = await getTournaments();
@@ -148,6 +190,52 @@ export const TournamentsList = () => {
     setGenerateError(null);
   };
 
+  const handleDrawConfigChange = (field, value) => {
+    setDrawConfig((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    // Validar después de cada cambio
+    validateDrawConfig();
+  };
+
+  const validateDrawConfig = () => {
+    const errors = {};
+    const participantsCount = selectedTournament?.participants?.length || 0;
+
+    // Validación 1: Jugadores por zona no puede ser mayor a la cantidad de inscriptos
+    if (drawConfig.playersPerZone > participantsCount) {
+      errors.playersPerZone = `No puede ser mayor a ${participantsCount} (total de inscriptos)`;
+    }
+
+    // Validación 2: Clasifican por zona no puede ser mayor a jugadores por zona
+    if (drawConfig.qualifiersPerZone > drawConfig.playersPerZone) {
+      errors.qualifiersPerZone = `No puede ser mayor a ${drawConfig.playersPerZone} (jugadores por zona)`;
+    }
+
+    // Validación adicional: Mínimo de jugadores por zona
+    if (drawConfig.playersPerZone < 2) {
+      errors.playersPerZone = "Mínimo 2 jugadores por zona";
+    }
+
+    setDrawValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Función para calcular automáticamente las zonas
+  const calculateNumberOfZones = () => {
+    const participantsCount = selectedTournament?.participants?.length || 0;
+    return participantsCount > 0
+      ? Math.ceil(participantsCount / drawConfig.playersPerZone)
+      : 0;
+  };
+
+  // Función para calcular automáticamente el total de clasificados
+  const calculateTotalQualifiers = () => {
+    return calculateNumberOfZones() * drawConfig.qualifiersPerZone;
+  };
+
   const handleConfirmDelete = async () => {
     try {
       await deleteTournament(selectedTournamentId);
@@ -165,6 +253,16 @@ export const TournamentsList = () => {
   const handleCancelDelete = () => {
     setOpenConfirm(false);
     setSelectedTournamentId(null);
+  };
+
+  const handleViewRegistrations = (tournament) => {
+    setSelectedTournamentForRegistrations(tournament);
+    setOpenRegistrationsModal(true);
+  };
+
+  const handleCloseRegistrationsModal = () => {
+    setOpenRegistrationsModal(false);
+    setSelectedTournamentForRegistrations(null);
   };
 
   useEffect(() => {
@@ -198,19 +296,21 @@ export const TournamentsList = () => {
       maxWidth: 50,
       renderCell: (params) =>
         params.row.status < 2 ? (
-          <IconButton
-            color="primary"
-            size="small"
-            onClick={() => handleEditClick(params.row.id)}
-          >
-            <EditIcon />
-          </IconButton>
+          <Tooltip title="Editar">
+            <IconButton
+              color="primary"
+              size="small"
+              onClick={() => handleEditClick(params.row.id)}
+            >
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
         ) : null,
     },
-    { field: "description", headerName: "Descripción", flex: 1 },
+    { field: "description", headerName: "Descripción", flex: 2, minWidth: 200 },
     { field: "locationDescription", headerName: "Sede", flex: 1 },
     { field: "categoryDescription", headerName: "Categoría", flex: 1 },
-    { field: "tournamentTypeDescription", headerName: "Tipo", flex: 1 },
+    { field: "tournamentTypeDescription", headerName: "Tipo", flex: 0.5, minWidth: 100 },
     {
       field: "closeDate",
       headerName: "Cierre",
@@ -239,6 +339,25 @@ export const TournamentsList = () => {
     },
 
     { field: "statusName", headerName: "Estado", flex: 1 },
+    {
+      field: "registrations",
+      headerName: "",
+      flex: 1,
+      width: 50,
+      minWidth: 50,
+      maxWidth: 50,
+      renderCell: (params) => (
+        <Tooltip title="Ver Inscripciones">
+          <IconButton
+            color="info"
+            size="small"
+            onClick={() => handleViewRegistrations(params.row)}
+          >
+            <PersonIcon />
+          </IconButton>
+        </Tooltip>
+      ),
+    },
     {
       field: "actions",
       headerName: "",
@@ -306,7 +425,7 @@ export const TournamentsList = () => {
   ];
 
   return (
-    <Container>
+    <Container maxWidth="xl">
       <Paper
         elevation={3}
         sx={{ padding: 3, marginTop: 4, position: "relative" }}
@@ -315,13 +434,15 @@ export const TournamentsList = () => {
           Torneos
         </Typography>
 
-        <div style={{ height: 400, width: "100%" }}>
+        <div style={{ height: 500, width: "100%" }}>
           <DataGrid
             rows={data}
             columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5, 10, 20]}
-            disableSelectionOnClick
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 25, page: 0 },
+              },
+            }}
           />
         </div>
 
@@ -338,6 +459,13 @@ export const TournamentsList = () => {
         open={openConfirm}
         onClose={handleCancelDelete}
         aria-labelledby="confirm-dialog-title"
+        PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
+        BackdropProps={{
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(30, 30, 30, 0.5)",
+          },
+        }}
       >
         <DialogTitle id="confirm-dialog-title">
           Confirmar Eliminación
@@ -361,6 +489,13 @@ export const TournamentsList = () => {
         onClose={handleCancelCloseRegistrations}
         maxWidth="sm"
         fullWidth
+        PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
+        BackdropProps={{
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(30, 30, 30, 0.5)",
+          },
+        }}
       >
         <DialogTitle>Cerrar Inscripciones</DialogTitle>
         <DialogContent>
@@ -431,13 +566,20 @@ export const TournamentsList = () => {
       <Dialog
         open={openGenerateDialog}
         onClose={handleCancelGenerate}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
+        PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
+        BackdropProps={{
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(30, 30, 30, 0.5)",
+          },
+        }}
       >
         <DialogTitle>Generar Draw del Torneo</DialogTitle>
         <DialogContent>
           {selectedTournament && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid container spacing={3} sx={{ mt: 1 }}>
               <Grid item xs={12}>
                 <Typography variant="h6" gutterBottom>
                   {selectedTournament.description}
@@ -455,37 +597,94 @@ export const TournamentsList = () => {
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={selectedTournament.includePlata || false}
-                      disabled
+                      checked={drawConfig.includePlata}
+                      onChange={(e) =>
+                        handleDrawConfigChange("includePlata", e.target.checked)
+                      }
+                      color="primary"
                     />
                   }
-                  label="Incluye Copa de Plata"
+                  label="Incluir Copa de Plata"
                 />
               </Grid>
 
               <Grid item xs={6}>
+                <FormControl
+                  fullWidth
+                  error={!!drawValidationErrors.playersPerZone}
+                >
+                  <InputLabel>Jugadores por zona</InputLabel>
+                  <Select
+                    value={drawConfig.playersPerZone}
+                    onChange={(e) =>
+                      handleDrawConfigChange("playersPerZone", e.target.value)
+                    }
+                    label="Jugadores por zona"
+                  >
+                    <MenuItem value={2}>2</MenuItem>
+                    <MenuItem value={3}>3</MenuItem>
+                    <MenuItem value={4}>4</MenuItem>
+                    <MenuItem value={5}>5</MenuItem>
+                    <MenuItem value={6}>6</MenuItem>
+                    <MenuItem value={7}>7</MenuItem>
+                    <MenuItem value={8}>8</MenuItem>
+                  </Select>
+                  {drawValidationErrors.playersPerZone && (
+                    <FormHelperText>
+                      {drawValidationErrors.playersPerZone}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={6}>
+                <FormControl
+                  fullWidth
+                  error={!!drawValidationErrors.qualifiersPerZone}
+                >
+                  <InputLabel>Clasifican por zona</InputLabel>
+                  <Select
+                    value={drawConfig.qualifiersPerZone}
+                    onChange={(e) =>
+                      handleDrawConfigChange(
+                        "qualifiersPerZone",
+                        e.target.value
+                      )
+                    }
+                    label="Clasifican por zona"
+                  >
+                    <MenuItem value={1}>1</MenuItem>
+                    <MenuItem value={2}>2</MenuItem>
+                    <MenuItem value={3}>3</MenuItem>
+                    <MenuItem value={4}>4</MenuItem>
+                  </Select>
+                  {drawValidationErrors.qualifiersPerZone && (
+                    <FormHelperText>
+                      {drawValidationErrors.qualifiersPerZone}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={6}>
                 <Typography variant="body1" gutterBottom>
-                  <strong>Jugadores por zona:</strong>{" "}
-                  {selectedTournament.playersPerZone || 4}
+                  <strong>Cantidad de zonas:</strong> {calculateNumberOfZones()}
+                </Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Se calcula automáticamente:{" "}
+                  {selectedTournament?.participants?.length || 0} inscriptos ÷{" "}
+                  {drawConfig.playersPerZone} por zona
                 </Typography>
               </Grid>
 
               <Grid item xs={6}>
                 <Typography variant="body1" gutterBottom>
-                  <strong>Clasifican por zona:</strong>{" "}
-                  {selectedTournament.qualifiersPerZone || 2}
+                  <strong>Total de clasificados:</strong>{" "}
+                  {calculateTotalQualifiers()}
                 </Typography>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Typography variant="body1" gutterBottom>
-                  <strong>Cantidad de zonas:</strong>{" "}
-                  {selectedTournament.participants?.length
-                    ? Math.ceil(
-                        selectedTournament.participants.length /
-                          (selectedTournament.playersPerZone || 4)
-                      )
-                    : 0}
+                <Typography variant="caption" color="textSecondary">
+                  Se calcula automáticamente: {calculateNumberOfZones()} zonas ×{" "}
+                  {drawConfig.qualifiersPerZone} por zona
                 </Typography>
               </Grid>
 
@@ -504,12 +703,39 @@ export const TournamentsList = () => {
           <Button
             onClick={handleConfirmGenerate}
             color="primary"
-            disabled={generating}
+            disabled={
+              generating || Object.keys(drawValidationErrors).length > 0
+            }
             startIcon={generating ? <CircularProgress size={20} /> : null}
           >
-            {generating ? "Generando..." : "Generar"}
+            {generating ? "Generando..." : "Generar Draw"}
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Modal de inscripciones */}
+      <Dialog
+        open={openRegistrationsModal}
+        onClose={handleCloseRegistrationsModal}
+        fullWidth
+        maxWidth="lg"
+        PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
+        BackdropProps={{
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(30, 30, 30, 0.5)",
+          },
+        }}
+      >
+        <DialogContent dividers>
+          {selectedTournamentForRegistrations && (
+            <RegistrationsView
+              tournamentId={selectedTournamentForRegistrations.id}
+              tournamentType={selectedTournamentForRegistrations.tournamentType}
+              tournamentDescription={selectedTournamentForRegistrations.tournamentDescription}
+            />
+          )}
+        </DialogContent>
       </Dialog>
     </Container>
   );

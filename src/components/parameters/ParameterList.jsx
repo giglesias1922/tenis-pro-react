@@ -141,9 +141,11 @@ export const ParameterList = () => {
           <DataGrid
             rows={data}
             columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5, 10, 20]}
-            disableSelectionOnClick
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 25, page: 0 },
+              },
+            }}
           />
         </div>
 
@@ -160,6 +162,13 @@ export const ParameterList = () => {
         open={openConfirm}
         onClose={handleCancelDelete}
         aria-labelledby="confirm-dialog-title"
+        PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
+        BackdropProps={{
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(30, 30, 30, 0.5)",
+          },
+        }}
       >
         <DialogTitle id="confirm-dialog-title">
           Confirmar Eliminación

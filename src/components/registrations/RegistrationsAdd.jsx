@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import useForm from "../../hooks/useForm";
 import { RegistrationsView } from "./RegistrationsView";
 import { TournamentDetail } from "../Common/TournamentDetail";
+import { AlertSuccess, showAlert } from "../Common/AlertSuccess";
 import {
   getTournamentsToRegistration,
   getTournamentById,
@@ -28,8 +29,6 @@ import {
   MenuItem,
   FormControl,
   FormHelperText,
-  Snackbar,
-  Alert,
   IconButton,
 } from "@mui/material";
 
@@ -42,11 +41,12 @@ export const RegistrationsAdd = () => {
     player1: "",
     player2: "",
   });
-  const [openSnackbar, setOpenSnackbar] = useState(false);
   const [tournamentType, setTournamentType] = useState(null);
+  const [tournamentDescription, setTournamentDescription] = useState(null);
   const [SelectedTournamentId, setSelectedTournamentId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [ValidForm, setValidForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { formData, handleChange, resetForm } = useForm({
     tournamentId: "",
@@ -136,6 +136,8 @@ export const RegistrationsAdd = () => {
     e.preventDefault();
     if (!validate()) return;
 
+    setIsSubmitting(true);
+
     const playersArray = [formData.player1, formData.player2].filter((p) => p); // armás el array de players
 
     const obj = {
@@ -148,21 +150,19 @@ export const RegistrationsAdd = () => {
     try {
       await createRegistration(obj);
       refreshUsers();
-      setOpenSnackbar(true);
+      showAlert("¡Registro guardado con éxito!");
     } catch (error) {
       console.error("Error al guardar la inscripción:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="md">
       <Paper elevation={3} sx={{ padding: 3, marginTop: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          Inscripciones
-        </Typography>
-
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
+          <Grid container spacing={2} direction="column">
             <Grid item xs={12} sx={{ mt: 3 }}>
               <FormControl fullWidth error={!!errors.tournamentId}>
                 <InputLabel id="tournament-label">Torneo</InputLabel>
@@ -247,50 +247,38 @@ export const RegistrationsAdd = () => {
                 variant="contained"
                 color="primary"
                 fullWidth
-                disabled={!ValidForm}
+                disabled={!ValidForm || isSubmitting}
               >
-                Guardar
+                {isSubmitting ? "Guardando..." : "Guardar"}
               </Button>
             </Grid>
           </Grid>
         </form>
       </Paper>
 
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={3000}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setOpenSnackbar(false)}
-          severity="success"
-          sx={{ width: "100%" }}
-        >
-          ¡Registro guardado con éxito!
-        </Alert>
-      </Snackbar>
+      <AlertSuccess />
 
       <Dialog
         open={openModal}
         onClose={() => setOpenModal(false)}
         fullWidth
         maxWidth="md"
+        PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
+        BackdropProps={{
+          sx: {
+            backdropFilter: "blur(6px)",
+            backgroundColor: "rgba(30, 30, 30, 0.5)",
+          },
+        }}
       >
-        <DialogTitle>
-          Inscripciones
-          <IconButton
-            aria-label="close"
-            onClick={() => setOpenModal(false)}
-            sx={{ position: "absolute", right: 8, top: 8 }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
         <DialogContent dividers>
           <RegistrationsView
             tournamentId={formData.tournamentId}
             tournamentType={tournamentType}
+            tournamentDescription={
+              tournamentsList.find((t) => t.id === formData.tournamentId)
+                ?.description
+            }
           />
         </DialogContent>
       </Dialog>

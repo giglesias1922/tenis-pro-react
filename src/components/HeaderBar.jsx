@@ -18,25 +18,22 @@ import { UserContext } from "../context/UserContext";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown"; // Agregado para ícono de submenú
 
 const pages = [
-  { id: 1, label: "Usuarios", path: "/users", auth: true },
-  { id: 2, label: "Torneos", path: "/tournaments", auth: true },
-  { id: 3, label: "Inscripciones", path: "/registrations", auth: true },
-  { id: 4, label: "Partidos", path: "/matches", auth: true },
-  { id: 5, label: "Mantenimiento", path: "", auth: true },
-  { id: 7, label: "Ranking", path: "/ranking", auth: true },
-
-  //submenus
-  { id: 6, label: "Categorias", path: "/categories", auth: true, parentId: 5 },
+  { id: 1, label: "Usuarios", path: "/users", auth: true, parentId: 5 }, //submenu
+  { id: 2, label: "Torneos", path: "/tournaments", auth: true, parentId: 10 },
   {
-    id: 8,
-    label: "Parámetros",
-    path: "/parameters",
+    id: 3,
+    label: "Inscripciones",
+    path: "/registrations",
     auth: true,
-    parentId: 5,
+    parentId: 10,
   },
-
-  //menu publico
-  { id: 9, label: "Cartelera", path: "/tournaments/board", auth: false },
+  { id: 4, label: "Partidos", path: "/matches", auth: true, parentId: 10 },
+  { id: 5, label: "Mantenimiento", path: "", auth: true },
+  { id: 6, label: "Categorias", path: "/categories", auth: true, parentId: 5 }, //submenu
+  { id: 7, label: "Ranking", path: "/ranking", auth: true },
+  { id: 8, label: "Parámetros", path: "/parameters", auth: true, parentId: 5 },
+  { id: 9, label: "Torneos", path: "/tournaments/board", auth: false }, //menu publico
+  { id: 10, label: "Organización", path: "", auth: true },
 ];
 
 const settings = [
@@ -50,7 +47,7 @@ const subMenus = pages.filter((p) => p.parentId);
 export const HeaderBar = () => {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
-  const [submenuAnchor, setSubmenuAnchor] = useState(null);
+  const [submenuAnchors, setSubmenuAnchors] = useState({});
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useContext(UserContext);
 
@@ -58,24 +55,37 @@ export const HeaderBar = () => {
   const handleCloseNavMenu = () => setAnchorElNav(null);
   const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
-  const handleOpenSubmenu = (event) => setSubmenuAnchor(event.currentTarget);
-  const handleCloseSubmenu = () => setSubmenuAnchor(null);
+  
+  const handleOpenSubmenu = (event, parentId) => {
+    setSubmenuAnchors(prev => ({
+      ...prev,
+      [parentId]: event.currentTarget
+    }));
+  };
+  
+  const handleCloseSubmenu = (parentId) => {
+    setSubmenuAnchors(prev => ({
+      ...prev,
+      [parentId]: null
+    }));
+  };
 
   const handleNavigation = (path) => {
     navigate(path);
     handleCloseNavMenu();
-    handleCloseSubmenu();
+    // Cerrar todos los submenús
+    setSubmenuAnchors({});
   };
 
   return (
     <AppBar position="static" color="default" enableColorOnDark>
-      <Container maxWidth="xl">
+      <Box sx={{ width: "100%" }}>
         <Toolbar
           disableGutters
           sx={{ minHeight: "auto", paddingY: 0, margin: 0 }}
         >
           {/* Logo */}
-          <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", pl: 0, ml: 0 }}>
             <Link to="/" style={{ display: "flex", alignItems: "center" }}>
               <img
                 src={Logo}
@@ -130,7 +140,7 @@ export const HeaderBar = () => {
                 return hasSubmenu ? (
                   <Box key={page.id}>
                     <Button
-                      onClick={handleOpenSubmenu}
+                      onClick={(event) => handleOpenSubmenu(event, page.id)}
                       sx={{
                         my: 2,
                         color: "white",
@@ -142,9 +152,9 @@ export const HeaderBar = () => {
                       <ArrowDropDownIcon />
                     </Button>
                     <Menu
-                      anchorEl={submenuAnchor}
-                      open={Boolean(submenuAnchor)}
-                      onClose={handleCloseSubmenu}
+                      anchorEl={submenuAnchors[page.id]}
+                      open={Boolean(submenuAnchors[page.id])}
+                      onClose={() => handleCloseSubmenu(page.id)}
                       anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
                       transformOrigin={{ vertical: "top", horizontal: "left" }}
                     >
@@ -172,7 +182,7 @@ export const HeaderBar = () => {
 
           {/* Usuario autenticado */}
           {isAuthenticated && (
-            <Box sx={{ flexGrow: 0 }}>
+            <Box sx={{ flexGrow: 0, mr: 5 }}>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                   <Avatar
@@ -220,7 +230,7 @@ export const HeaderBar = () => {
             </Box>
           )}
         </Toolbar>
-      </Container>
+      </Box>
     </AppBar>
   );
 };

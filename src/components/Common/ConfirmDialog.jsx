@@ -10,7 +10,17 @@ import {
 
 const ConfirmDialog = ({ open, onClose, onConfirm, title, message }) => {
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog 
+      open={open} 
+      onClose={onClose}
+      PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
+      BackdropProps={{
+        sx: {
+          backdropFilter: "blur(6px)",
+          backgroundColor: "rgba(30, 30, 30, 0.5)",
+        },
+      }}
+    >
       <DialogTitle>{title || "Confirmación"}</DialogTitle>
       <DialogContent>
         <Typography>{message || "¿Estás seguro de que querés continuar?"}</Typography>

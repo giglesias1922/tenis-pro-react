@@ -40,17 +40,6 @@ export const getParameterById = async (id) => {
     }
 };
 
-
-export const updateParameter = async (id, param) => {
-    try {
-      const response = await axiosInstance.put(`${API_URL}/${id}`, param);
-      return response.data;
-    } catch (error) {
-      console.error("Error en updateParam:", error);
-      throw error;
-    }
-};
-
 export const deleteParameter = async (id) => {
     try {
       await axiosInstance.delete(`${API_URL}/${id}`);
@@ -58,4 +47,14 @@ export const deleteParameter = async (id) => {
       console.error("Error en deleteParam:", error);
       throw error;
     }
+};
+
+export const updateParameter = async (id, param) => {
+  try {
+    const response = await axiosInstance.put(`${API_URL}/${id}`, param);
+    return response.data;
+  } catch (error) {
+    console.error("Error en updateParameter:", error);
+    throw error;
+  }
 };

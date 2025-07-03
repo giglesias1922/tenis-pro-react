@@ -197,7 +197,7 @@ export const UserAdd = () => {
   }, [id]);
 
   return (
-    <Container>
+    <Container maxWidth="md">
       <Paper
         elevation={3}
         sx={{ padding: 3, marginTop: 4, position: "relative" }}
@@ -249,7 +249,7 @@ export const UserAdd = () => {
 
         <form onSubmit={handleSubmit} key={id}>
           <Grid container spacing={2}>
-            <Grid item sm={4}>
+            <Grid size={6}>
               <TextField
                 fullWidth
                 label="Nombre"
@@ -261,7 +261,7 @@ export const UserAdd = () => {
                 <FormHelperText error>{errors.name}</FormHelperText>
               )}
             </Grid>
-            <Grid item sm={4}>
+            <Grid size={6}>
               <TextField
                 fullWidth
                 label="Apellido"
@@ -273,30 +273,7 @@ export const UserAdd = () => {
                 <FormHelperText error>{errors.lastName}</FormHelperText>
               )}
             </Grid>
-            <Grid item sm={2}>
-              <TextField
-                id="date"
-                label="Fecha de Nacimiento"
-                type="date"
-                name="birthDate"
-                value={formData.birthDate || ""}
-                onChange={handleChange}
-              />
-              {errors.birthDate && (
-                <FormHelperText error>{errors.birthDate}</FormHelperText>
-              )}
-            </Grid>
-
-            <Grid item sm={4}>
-              <TextField
-                fullWidth
-                label="DNI"
-                value={formData.identification || ""}
-                onChange={handleChange}
-              />
-            </Grid>
-
-            <Grid item xs={4}>
+            <Grid size={6}>
               <TextField
                 fullWidth
                 label="Email"
@@ -309,16 +286,25 @@ export const UserAdd = () => {
                 <FormHelperText error>{errors.email}</FormHelperText>
               )}
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <TextField
-                fullWidth
-                label="Teléfono"
-                name="phone"
-                value={formData.phone || ""}
+                id="date"
+                label="Fecha de Nacimiento"
+                type="date"
+                name="birthDate"
+                value={formData.birthDate || ""}
                 onChange={handleChange}
+                helperText={errors.birthDate}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                fullWidth
               />
+              {errors.birthDate && (
+                <FormHelperText error>{errors.birthDate}</FormHelperText>
+              )}
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={6}>
               <FormControl fullWidth>
                 <InputLabel id="category-label">Categoría</InputLabel>
                 <Select
@@ -338,7 +324,7 @@ export const UserAdd = () => {
                 )}
               </FormControl>
             </Grid>
-            <Grid item xs="{8}" sm={4}>
+            <Grid size={6}>
               <FormControl fullWidth>
                 <InputLabel id="profile-label">Perfil</InputLabel>
                 <Select
@@ -358,6 +344,25 @@ export const UserAdd = () => {
                 )}
               </FormControl>
             </Grid>
+            <Grid size={4}>
+              <TextField
+                fullWidth
+                label="DNI"
+                value={formData.identification || ""}
+                onChange={handleChange}
+              />
+            </Grid>
+
+            <Grid size={4}>
+              <TextField
+                fullWidth
+                label="Teléfono"
+                name="phone"
+                value={formData.phone || ""}
+                onChange={handleChange}
+              />
+            </Grid>
+
             <Grid item>
               <FormControlLabel
                 control={
@@ -370,7 +375,7 @@ export const UserAdd = () => {
                 label="Activo"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 fullWidth
                 label="Comentario"
@@ -382,7 +387,7 @@ export const UserAdd = () => {
                 variant="outlined"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Button
                 type="submit"
                 variant="contained"

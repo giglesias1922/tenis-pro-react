@@ -7,8 +7,12 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  Box,
+  Typography,
+  Avatar,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import PersonIcon from "@mui/icons-material/Person";
 import {
   getRegistrations,
   deleteRegistration,
@@ -17,7 +21,7 @@ import {
 export const RegistrationsView = ({
   tournamentId,
   onRegistrationChange,
-  tournamentType,
+  tournamentDescription,
 }) => {
   const [data, setdata] = useState([]);
   const [openConfirm, setOpenConfirm] = useState(false);
@@ -26,6 +30,7 @@ export const RegistrationsView = ({
   useEffect(() => {
     getRegistrations(tournamentId).then((data) => {
       setdata(data);
+      console.log(data);
     });
   }, [tournamentId]);
 
@@ -54,8 +59,31 @@ export const RegistrationsView = ({
 
   // Columnas de la grilla
   const columns = [
+    {
+      field: "avatar",
+      headerName: "",
+      width: 60,
+      minWidth: 60,
+      maxWidth: 60,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          <Avatar sx={{ width: 32, height: 32 }}>
+            <PersonIcon />
+          </Avatar>
+        </Box>
+      ),
+    },
     { field: "displayName", headerName: "Jugador", flex: 1 },
-    { field: "createdAt", headerName: "Fecha Inscripción", flex: 1 },
     {
       field: "delete",
       headerName: "",
@@ -81,15 +109,26 @@ export const RegistrationsView = ({
   return (
     <>
       <Container>
+        {tournamentDescription && (
+          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            Inscripciones - {tournamentDescription}
+          </Typography>
+        )}
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
             rows={data}
             columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5, 10, 20]}
+            pagination={false}
             disableSelectionOnClick
+            hideFooterPagination={true}
+            hideFooter={true}
           />
         </div>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Cantidad de inscriptos: {data.length}
+          </Typography>
+        </Box>
       </Container>
 
       <ConfirmDialog

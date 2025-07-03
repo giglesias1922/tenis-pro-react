@@ -33,16 +33,17 @@ import {
 
 export const TournamentsAdd = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id: selectdId } = useParams();
   const [categories, setCategories] = useState([]);
   const [locations, setLocations] = useState([]);
   const [Status, setStatus] = useState();
-  const isEdit = id !== "new" && id !== undefined;
+  const isEdit = selectdId !== "new" && selectdId !== undefined;
   const [tournamentTypes, setTournamentTypes] = useState([]);
   const imageInputRef = useRef();
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
 
+  
   const { formData, setFormData, handleChange, resetForm, resetFields } =
     useForm({
       description: "",
@@ -73,7 +74,7 @@ export const TournamentsAdd = () => {
 
   useEffect(() => {
     if (isEdit) {
-      getTournamentById(id).then((data) => {
+      getTournamentById(selectdId).then((data) => {
         setFormData({
           description: data.description || "",
           closeDate: data.closeDate
@@ -96,7 +97,7 @@ export const TournamentsAdd = () => {
         setImagePreview("");
       });
     }
-  }, [id, isEdit]);
+  }, [selectdId, isEdit]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -155,9 +156,15 @@ export const TournamentsAdd = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    // Verifica que id esté disponible antes de continuar
+    if (isEdit && !selectdId) {
+      console.error("ID no disponible para edición");
+      return;
+    }
+
     try {
       let tournament = {
-        id: id,
+        id: selectdId,
         description: formData.description,
         closeDate: formData.closeDate
           ? new Date(formData.closeDate).toISOString()
@@ -178,19 +185,26 @@ export const TournamentsAdd = () => {
       if (isEdit) {
         // Si estamos editando y hay una nueva imagen
         if (selectedImageFile) {
-          const imageUrl = await uploadImageToCloudinary(selectedImageFile, id);
+          const imageUrl = await uploadImageToCloudinary(
+            selectedImageFile,
+            selectdId
+          );
           tournament.image = imageUrl;
         }
-        await updateTournament(id, tournament);
+
+        await updateTournament(selectdId, tournament);
       } else {
         // Si es alta, primero creamos el torneo
         const response = await createTournament(tournament);
-        
+
         if (selectedImageFile) {
           // Ahora subimos la imagen con el ID del torneo creado
           const tournamentId = response.id || response.data?.id; // Ajusta según tu API
-          const imageUrl = await uploadImageToCloudinary(selectedImageFile, tournamentId);
-          
+          const imageUrl = await uploadImageToCloudinary(
+            selectedImageFile,
+            tournamentId
+          );
+
           // Actualizamos el torneo con la imagen
           await updateTournament(tournamentId, {
             ...tournament,
@@ -211,10 +225,16 @@ export const TournamentsAdd = () => {
   };
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="md">
       <Paper
         elevation={3}
-        sx={{ padding: 3, marginTop: 4, position: "relative" }}
+        sx={{
+          padding: 3,
+          marginTop: 4,
+          position: "relative",
+          maxWidth: 1000,
+          mx: "auto",
+        }}
       >
         <Typography variant="h5" gutterBottom>
           {isEdit ? "Edición de Torneo" : "Nuevo Torneo"}
@@ -228,7 +248,7 @@ export const TournamentsAdd = () => {
 
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid size={12}>
               <TextField
                 fullWidth
                 label="Descripción"
@@ -239,7 +259,8 @@ export const TournamentsAdd = () => {
                 helperText={errors.description}
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+
+            <Grid size={4}>
               <TextField
                 id="closeDate"
                 label="Cierre de inscripción"
@@ -251,9 +272,10 @@ export const TournamentsAdd = () => {
                 InputLabelProps={{
                   shrink: true,
                 }}
+                fullWidth
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={4}>
               <TextField
                 id="initialDate"
                 label="Inicio"
@@ -266,9 +288,10 @@ export const TournamentsAdd = () => {
                 InputLabelProps={{
                   shrink: true,
                 }}
+                fullWidth
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={4}>
               <TextField
                 id="endDate"
                 label="Fin"
@@ -281,9 +304,11 @@ export const TournamentsAdd = () => {
                 InputLabelProps={{
                   shrink: true,
                 }}
+                fullWidth
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+
+            <Grid size={6}>
               <FormControl fullWidth error={!!errors.tournamentType}>
                 <InputLabel id="tournament-type-label">
                   Tipo de Torneo
@@ -305,7 +330,7 @@ export const TournamentsAdd = () => {
                 )}
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={6}>
               <FormControl fullWidth error={!!errors.categoryId}>
                 <InputLabel id="category-label">Categoría</InputLabel>
                 <Select
@@ -325,7 +350,7 @@ export const TournamentsAdd = () => {
                 )}
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={12}>
               <FormControl fullWidth error={!!errors.locationId}>
                 <InputLabel id="location-label">Sede</InputLabel>
                 <Select
@@ -347,7 +372,7 @@ export const TournamentsAdd = () => {
             </Grid>
 
             {/* Imagen Banner */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
                 <Box sx={{ position: "relative" }}>
                   <Avatar
@@ -372,7 +397,9 @@ export const TournamentsAdd = () => {
                         }}
                       />
                     ) : (
-                      <InsertPhotoIcon sx={{ fontSize: 60, color: "#bdbdbd" }} />
+                      <InsertPhotoIcon
+                        sx={{ fontSize: 60, color: "#bdbdbd" }}
+                      />
                     )}
                   </Avatar>
                   <Tooltip title="Cambiar imagen">
@@ -404,7 +431,7 @@ export const TournamentsAdd = () => {
                 </Box>
               </Box>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Button
                 type="submit"
                 variant="contained"
