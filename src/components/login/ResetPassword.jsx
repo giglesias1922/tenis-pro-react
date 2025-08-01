@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { showAlert } from "../Common/AlertSuccess";
+import { showMessage } from "../Common/AlertMessage";
 import { validateResetToken, changePassword } from "../../services/authService";
 import useForm from "../../hooks/useForm";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -61,14 +61,14 @@ export const ResetPassword = () => {
       const response = await validateResetToken(token);
       if (!response.success) {
         // Mostrar error si el token es inválido o expirado
-        showAlert(response.message || "Token inválido o expirado");
+        showMessage(response.message || "Token inválido o expirado");
         navigate("/login");
       }
 
       // Guardás también el userId o lo que te devuelva la API
       setUserId(response.userId);
     } catch (err) {
-      showAlert("Error al validar el token");
+      showMessage("Error al validar el token");
       navigate("/login");
     }
   };
@@ -120,7 +120,7 @@ export const ResetPassword = () => {
       const response = await changePassword(user);
 
       if (response.success) {
-        showAlert("Se ha registrado el cambio de contraseña con éxito.");
+        showMessage("Se ha registrado el cambio de contraseña con éxito.");
         navigate("/login");
       } else setErrors({ password: response.message });
     } catch (error) {

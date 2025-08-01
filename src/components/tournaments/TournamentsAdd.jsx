@@ -13,7 +13,6 @@ import { uploadImageToCloudinary } from "../../helpers/imageUploadHelper";
 import { IconButton, Box, Avatar, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
-import ImageIcon from "@mui/icons-material/Image";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import {
   TextField,
@@ -43,7 +42,6 @@ export const TournamentsAdd = () => {
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
 
-  
   const { formData, setFormData, handleChange, resetForm, resetFields } =
     useForm({
       description: "",

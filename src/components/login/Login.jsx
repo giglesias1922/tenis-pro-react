@@ -3,7 +3,7 @@ import useForm from "../../hooks/useForm";
 import { loginUser, ResentActivationEmail } from "../../services/authService";
 import { useNavigate } from "react-router-dom";
 import { UserContext, UserProvider } from "../../context/UserContext";
-import { showAlert } from "../Common/AlertSuccess";
+import { showMessage } from "../Common/AlertMessage";
 
 import {
   Link,
@@ -113,7 +113,7 @@ export const Login = () => {
 
     setOpenAlertActivate(false);
 
-    showAlert(
+    showMessage(
       " Te enviamos un correo de activación. Si no lo ves, revisá tu carpetade spam."
     );
   };

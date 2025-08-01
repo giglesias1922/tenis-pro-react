@@ -3,16 +3,16 @@ import useForm from "../../hooks/useForm";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-
+import CloseIcon from "@mui/icons-material/Close";
 import { TournamentDetail } from "../Common/TournamentDetail";
 import {
   GetTournamentsToProgramming,
   getTournamentById,
+  getParticipant,
 } from "../../services/tournamentsService";
-import { getRegistratedUsers } from "../../services/registrationsService";
 import { createMatch } from "../../services/matchesService";
 import { UserContext } from "../../context/UserContext";
-
+import { useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -27,10 +27,13 @@ import {
   FormHelperText,
   Snackbar,
   Alert,
+  Box,
+  IconButton,
 } from "@mui/material";
 
 export const MatchesAdd = () => {
   const { userLog } = useContext(UserContext);
+  const navigate = useNavigate();
   const [tournamentsList, setTournamentsList] = useState([]);
   const [usersList, setUsersList] = useState([]);
   const [errors, setErrors] = useState({
@@ -58,7 +61,7 @@ export const MatchesAdd = () => {
       getTournamentById(formData.tournamentId).then((data) => {
         setTournamentType(data.tournamentType);
         if (data?.categoryId) {
-          getRegistratedUsers(formData.tournamentId).then((data) => {
+          getParticipant(formData.tournamentId).then((data) => {
             setUsersList(data);
           });
         }
@@ -130,16 +133,33 @@ export const MatchesAdd = () => {
     }
   };
 
+  const handleBackClick = () => {
+    navigate("/matches");
+  };
+
   return (
     <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ padding: 3, marginTop: 4 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          padding: 3,
+          marginTop: 4,
+          position: "relative",
+          maxWidth: 1000,
+          mx: "auto",
+        }}
+      >
         <Typography variant="h5" gutterBottom>
           Nuevo partido
         </Typography>
-
+        <Box sx={{ position: "absolute", top: 10, right: 10 }}>
+          <IconButton color="error" onClick={handleBackClick}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sx={{ mt: 3 }}>
+            <Grid size={12}>
               <FormControl fullWidth error={!!errors.tournamentId}>
                 <InputLabel id="tournament-label">Torneo</InputLabel>
                 <Select
@@ -165,7 +185,7 @@ export const MatchesAdd = () => {
               onRegistrationChange={refreshUsers}
               tournamentType={tournamentType}
             />
-            <Grid item xs={12}>
+            <Grid size={12}>
               <FormControl fullWidth error={!!errors.scheduledDate}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DateTimePicker
@@ -188,14 +208,14 @@ export const MatchesAdd = () => {
                 )}
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Grid
                 container
                 spacing={2}
                 alignItems="center"
                 justifyContent="center"
               >
-                <Grid item xs={5}>
+                <Grid size={5}>
                   <FormControl fullWidth error={!!errors.registration1}>
                     <InputLabel id="player1-label">Jugador 1</InputLabel>
                     <Select
@@ -216,13 +236,13 @@ export const MatchesAdd = () => {
                   </FormControl>
                 </Grid>
 
-                <Grid item xs={2}>
+                <Grid size={2}>
                   <Typography align="center" variant="h6">
                     vs
                   </Typography>
                 </Grid>
 
-                <Grid item xs={5}>
+                <Grid size={5}>
                   <FormControl fullWidth error={!!errors.registration2}>
                     <InputLabel id="player2-label">Jugador 2</InputLabel>
                     <Select
@@ -245,7 +265,7 @@ export const MatchesAdd = () => {
               </Grid>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Button
                 type="submit"
                 variant="contained"

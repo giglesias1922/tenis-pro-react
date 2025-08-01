@@ -5,7 +5,7 @@ const API_URL = `${config.apiUrl}/matches`;
 
 export const getMatches = async (tournamentId) => {
     try {
-      const response = await axiosInstance.get(`${API_URL}/tournament/${tournamentId}`);
+      const response = await axiosInstance.get(`${API_URL}`);
       return response.data;
     } catch (error) {
       console.error("Error en getMatches:", error);

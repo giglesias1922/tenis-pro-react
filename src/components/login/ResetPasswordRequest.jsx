@@ -4,7 +4,7 @@ import {
   validateResetToken,
 } from "../../services/authService";
 import useForm from "../../hooks/useForm";
-import { showAlert } from "../Common/AlertSuccess";
+import { showMessage } from "../Common/AlertMessage";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -61,7 +61,7 @@ export const ResetPasswordRequest = () => {
       const response = await resetPasswordRequest(formData.email);
 
       if (response.success) {
-        showAlert(
+        showMessage(
           "Te enviamos un correo de reseteo de contaseña. Si no lo ves, revisá tu carpeta de spam."
         );
         navigate("/login");

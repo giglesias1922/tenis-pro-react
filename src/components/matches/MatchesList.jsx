@@ -32,6 +32,7 @@ export const MatchesList = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [openHistory, setOpenHistory] = useState(false);
   const [openResult, setOpenResult] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const onModalResultClose = () => {
     setOpenResult(false);
@@ -90,15 +91,17 @@ export const MatchesList = () => {
   };
 
   const onGridReload = () => {
-    getMatches().then((data) => {
-      setdata(data);
-    });
+    setLoading(true);
+    getMatches()
+      .then(setdata)
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    getMatches().then((data) => {
-      setdata(data);
-    });
+    setLoading(true);
+    getMatches()
+      .then(setdata)
+      .finally(() => setLoading(false));
   }, []);
 
   // Columnas de la grilla
@@ -201,6 +204,7 @@ export const MatchesList = () => {
           <DataGrid
             rows={data}
             columns={columns}
+            loading={loading}
             initialState={{
               pagination: {
                 paginationModel: { pageSize: 25, page: 0 },

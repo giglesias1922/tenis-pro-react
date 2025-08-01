@@ -2,15 +2,13 @@ import { useState, useEffect, useContext } from "react";
 import useForm from "../../hooks/useForm";
 import { RegistrationsView } from "./RegistrationsView";
 import { TournamentDetail } from "../Common/TournamentDetail";
-import { AlertSuccess, showAlert } from "../Common/AlertSuccess";
+import { showMessage } from "../Common/AlertMessage";
 import {
+  addParticipant,
   getTournamentsToRegistration,
   getTournamentById,
+  getParticipantsToRegister,
 } from "../../services/tournamentsService";
-import {
-  createRegistration,
-  getUsersToRegistration,
-} from "../../services/registrationsService";
 import { UserContext } from "../../context/UserContext";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -64,9 +62,10 @@ export const RegistrationsAdd = () => {
         setTournamentType(data.tournamentType);
 
         if (data?.categoryId) {
-          getUsersToRegistration(data.categoryId, formData.tournamentId).then(
-            setUsersList
-          );
+          getParticipantsToRegister(
+            data.categoryId,
+            formData.tournamentId
+          ).then(setUsersList);
         }
       });
     }
@@ -148,11 +147,12 @@ export const RegistrationsAdd = () => {
     };
 
     try {
-      await createRegistration(obj);
+      await addParticipant(obj);
       refreshUsers();
-      showAlert("¡Registro guardado con éxito!");
+      showMessage("Resultado guardado con éxito ✅", "success");
     } catch (error) {
       console.error("Error al guardar la inscripción:", error);
+      showMessage("Ocurrió un error ❌", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -255,8 +255,6 @@ export const RegistrationsAdd = () => {
           </Grid>
         </form>
       </Paper>
-
-      <AlertSuccess />
 
       <Dialog
         open={openModal}

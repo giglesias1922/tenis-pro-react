@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form"; // Importamos react-hook-form
 import {
-  createCategory,
-  updateCategory,
-  getCategoryById,
-} from "../../services/categoriesService";
+  createLocation,
+  updateLocation,
+  getLocationById,
+} from "../../services/locationsService";
 import { IconButton, Box } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import {
@@ -19,7 +19,7 @@ import {
   Grid,
 } from "@mui/material";
 
-export const CategoriesAdd = () => {
+export const LocationsAdd = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = id !== "new" && id !== undefined;
@@ -38,33 +38,37 @@ export const CategoriesAdd = () => {
   const onSubmit = async (data, event) => {
     event?.preventDefault(); // Evita recargar la página
 
-    const category = {
+    const row = {
       id: id,
-      description: data.description,
+      name: data.name,
+      address: data.address,
+      phone: data.phone,
       active: data.active || false, // El valor de "active" es false por defecto
     };
 
     try {
       if (isEdit) {
-        await updateCategory(id, category);
+        await updateLocation(id, row);
       } else {
-        await createCategory(category);
+        await createLocation(row);
       }
-      navigate("/categories");
+      navigate("/locations");
     } catch (error) {
-      console.error("Error al guardar la categoría:", error);
+      console.error("Error al guardar la sede:", error);
     }
   };
 
   const handleBackClick = () => {
-    navigate("/categories");
+    navigate("/locations");
   };
 
   useEffect(() => {
     if (isEdit) {
-      getCategoryById(id).then((data) => {
+      getLocationById(id).then((data) => {
         reset({
-          description: data.description,
+          name: data.name,
+          address: data.address,
+          phone: data.phone,
           active: data.active,
         });
       });
@@ -78,7 +82,7 @@ export const CategoriesAdd = () => {
         sx={{ padding: 3, marginTop: 4, position: "relative" }}
       >
         <Typography variant="h5" gutterBottom>
-          {isEdit ? "Edición de Categoría" : "Nueva Categoría"}
+          {isEdit ? "Edición de Sede" : "Nueva Sede"}
         </Typography>
 
         <Box sx={{ position: "absolute", top: 10, right: 10 }}>
@@ -92,13 +96,37 @@ export const CategoriesAdd = () => {
             <Grid size={12}>
               <TextField
                 fullWidth
-                value={watch("description") || ""}
-                label="Descripción"
-                {...register("description", {
-                  required: "La descripción es obligatoria",
+                value={watch("name") || ""}
+                label="Nombre"
+                {...register("name", {
+                  required: "El nombre es obligatorio",
                 })}
-                error={!!errors.description}
-                helperText={errors.description?.message}
+                error={!!errors.name}
+                helperText={errors.name?.message}
+              />
+            </Grid>
+            <Grid size={7}>
+              <TextField
+                fullWidth
+                value={watch("address") || ""}
+                label="Dirección"
+                {...register("address", {
+                  required: "La dirección  es obligatoria",
+                })}
+                error={!!errors.address}
+                helperText={errors.address?.message}
+              />
+            </Grid>
+            <Grid size={5}>
+              <TextField
+                fullWidth
+                value={watch("phone") || ""}
+                label="Teléfono"
+                {...register("phone", {
+                  required: "El teléfono es obligatorio",
+                })}
+                error={!!errors.phone}
+                helperText={errors.phone?.message}
               />
             </Grid>
             <Grid size={12}>

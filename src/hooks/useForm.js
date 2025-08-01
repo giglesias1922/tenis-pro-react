@@ -5,10 +5,12 @@ const useForm = (initialState = {}) => {
 
   // Función para manejar cambios en los campos del formulario
   const handleChange = (e) => {
-    const { name, value } = e.target; // Extraemos el nombre y el valor del campo
+    const { name, value, type } = e.target;
+    const parsedValue = type === 'number' ? parseInt(value, 10) || 0 : value;
+
     setFormData((prevState) => ({
-      ...prevState, // Copiamos el estado anterior
-      [name]: value, // Actualizamos solo el campo que ha cambiado
+      ...prevState,
+      [name]: parsedValue,
     }));
   };
 
@@ -21,7 +23,7 @@ const useForm = (initialState = {}) => {
     setFormData((prevState) => {
       const updated = { ...prevState };
       fields.forEach((field) => {
-        updated[field] = initialState[field] ?? ""; // Usamos el valor inicial o cadena vacía
+        updated[field] = initialState[field] ?? "";
       });
       return updated;
     });

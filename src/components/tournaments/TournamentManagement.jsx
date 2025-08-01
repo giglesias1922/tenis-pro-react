@@ -95,7 +95,10 @@ export const TournamentManagement = () => {
             Estado: <strong>{tournament.status}</strong>
           </Typography>
           <Typography variant="body1" color="textSecondary">
-            Tipo: <strong>{tournament.tournamentType === 0 ? "Singles" : "Doubles"}</strong>
+            Tipo:{" "}
+            <strong>
+              {tournament.tournamentType === 0 ? "Singles" : "Doubles"}
+            </strong>
           </Typography>
           <Typography variant="body1" color="textSecondary">
             Jugadores por zona: <strong>{tournament.playersPerZone}</strong>
@@ -129,8 +132,8 @@ export const TournamentManagement = () => {
 
         {selectedTab === 1 && isProgramming && (
           <Box>
-            <TournamentGenerator 
-              tournamentId={tournamentId} 
+            <TournamentGenerator
+              tournamentId={tournamentId}
               onTournamentUpdated={handleTournamentUpdated}
             />
           </Box>
@@ -150,4 +153,4 @@ export const TournamentManagement = () => {
       </Paper>
     </Container>
   );
-}; 
+};

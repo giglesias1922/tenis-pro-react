@@ -26,14 +26,16 @@ export const TournamentGenerator = ({ tournamentId, onTournamentUpdated }) => {
       setSuccess(false);
 
       await generateDraw(tournamentId);
-      
+
       setSuccess(true);
       if (onTournamentUpdated) {
         onTournamentUpdated();
       }
     } catch (error) {
       console.error("Error generating draw:", error);
-      setError(error.response?.data?.message || "Error al generar el draw del torneo");
+      setError(
+        error.response?.data?.message || "Error al generar el draw del torneo"
+      );
     } finally {
       setLoading(false);
     }
@@ -43,14 +45,14 @@ export const TournamentGenerator = ({ tournamentId, onTournamentUpdated }) => {
     <Container maxWidth="md">
       <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
         <Typography variant="h5" gutterBottom>
-          Generar Draw del Torneo
+          Generar Draw del Torneo -
         </Typography>
 
         <Box sx={{ mb: 3 }}>
           <Typography variant="body1" color="textSecondary" paragraph>
             Al generar el draw del torneo se realizarán las siguientes acciones:
           </Typography>
-          
+
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Card>
@@ -73,7 +75,7 @@ export const TournamentGenerator = ({ tournamentId, onTournamentUpdated }) => {
                 </CardContent>
               </Card>
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
               <Card>
                 <CardContent>
@@ -128,11 +130,12 @@ export const TournamentGenerator = ({ tournamentId, onTournamentUpdated }) => {
             ⚠️ Importante:
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            Una vez generado el draw, no se podrán modificar las inscripciones. 
-            Asegúrate de que todos los jugadores estén correctamente inscritos antes de continuar.
+            Una vez generado el draw, no se podrán modificar las inscripciones.
+            Asegúrate de que todos los jugadores estén correctamente inscritos
+            antes de continuar.
           </Typography>
         </Box>
       </Paper>
     </Container>
   );
-}; 
+};

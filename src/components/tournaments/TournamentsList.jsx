@@ -4,12 +4,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import LockIcon from "@mui/icons-material/Lock";
 import PersonIcon from "@mui/icons-material/Person";
-import CloseIcon from "@mui/icons-material/Close";
 import { IconButton, Box, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { getCategories } from "../../services/categoriesService";
 import { getLocations } from "../../services/locationsService";
 import { RegistrationsView } from "../registrations/RegistrationsView";
+import SportsTennisIcon from "@mui/icons-material/SportsTennis";
 import {
   Fab,
   Container,
@@ -40,33 +40,15 @@ import {
   getTournamentById,
   closeRegistrations,
 } from "../../services/tournamentsService.js";
-import { Visibility } from "@mui/icons-material";
 
 export const TournamentsList = () => {
   const [data, setdata] = useState([]);
   const navigate = useNavigate();
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedTournamentId, setSelectedTournamentId] = useState(null);
-  const [filterCategoryId, setFilterCategoryId] = useState(null);
-  const [filterLocationId, setFilterLocationId] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [locations, setLocations] = useState([]);
 
   // Estados para el popup de generar draw
-  const [openGenerateDialog, setOpenGenerateDialog] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState(null);
-  const [generating, setGenerating] = useState(false);
-  const [generateError, setGenerateError] = useState(null);
-
-  // Estados para la configuración del draw
-  const [drawConfig, setDrawConfig] = useState({
-    includePlata: false,
-    playersPerZone: 4,
-    qualifiersPerZone: 2,
-  });
-
-  // Estados para errores de validación
-  const [drawValidationErrors, setDrawValidationErrors] = useState({});
 
   // Estados para cerrar inscripciones
   const [openCloseDialog, setOpenCloseDialog] = useState(false);
@@ -75,7 +57,10 @@ export const TournamentsList = () => {
 
   // Estados para el modal de inscripciones
   const [openRegistrationsModal, setOpenRegistrationsModal] = useState(false);
-  const [selectedTournamentForRegistrations, setSelectedTournamentForRegistrations] = useState(null);
+  const [
+    selectedTournamentForRegistrations,
+    setSelectedTournamentForRegistrations,
+  ] = useState(null);
 
   const handleAddClick = () => {
     navigate("/tournaments/new");
@@ -85,9 +70,17 @@ export const TournamentsList = () => {
     navigate(`/tournaments/${tournamentId}`);
   };
 
+  const handleGenerateClick = (tournamentId) => {
+    navigate(`/tournaments/${tournamentId}/generate-draw`);
+  };
+
   const handleDeleteClick = (id) => {
     setSelectedTournamentId(id);
     setOpenConfirm(true);
+  };
+
+  const handleViewDraw = (tournamentId) => {
+    navigate(`/tournaments/${tournamentId}/draw`);
   };
 
   const handleCloseRegistrationsClick = (tournament) => {
@@ -125,117 +118,6 @@ export const TournamentsList = () => {
     setCloseError(null);
   };
 
-  const handleGenerateClick = async (tournament) => {
-    try {
-      // Obtener información completa del torneo
-      const tournamentData = await getTournamentById(tournament.id);
-      setSelectedTournament(tournamentData);
-
-      // Calcular valores iniciales
-      const initialPlayersPerZone = tournamentData.playersPerZone || 4;
-      const initialQualifiersPerZone = tournamentData.qualifiersPerZone || 2;
-
-      // Inicializar configuración con valores del torneo o por defecto
-      setDrawConfig({
-        includePlata: tournamentData.includePlata || false,
-        playersPerZone: initialPlayersPerZone,
-        qualifiersPerZone: initialQualifiersPerZone,
-      });
-
-      setOpenGenerateDialog(true);
-      setGenerateError(null);
-
-      // Validar configuración inicial
-      setTimeout(() => validateDrawConfig(), 100);
-    } catch (error) {
-      console.error("Error al obtener información del torneo:", error);
-    }
-  };
-
-  const handleConfirmGenerate = async () => {
-    try {
-      // Validar antes de generar
-      if (!validateDrawConfig()) {
-        setGenerateError(
-          "Por favor, corrige los errores de validación antes de generar el draw"
-        );
-        return;
-      }
-
-      setGenerating(true);
-      setGenerateError(null);
-
-      // Enviar la configuración junto con el ID del torneo
-      await generateDraw(selectedTournament.id, drawConfig);
-
-      // Recargar los datos después de generar el draw
-      const updatedData = await getTournaments();
-      setdata(updatedData);
-
-      setOpenGenerateDialog(false);
-      setSelectedTournament(null);
-    } catch (error) {
-      console.error("Error al generar el draw:", error);
-      setGenerateError(
-        error.response?.data?.message || "Error al generar el draw del torneo"
-      );
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const handleCancelGenerate = () => {
-    setOpenGenerateDialog(false);
-    setSelectedTournament(null);
-    setGenerateError(null);
-  };
-
-  const handleDrawConfigChange = (field, value) => {
-    setDrawConfig((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Validar después de cada cambio
-    validateDrawConfig();
-  };
-
-  const validateDrawConfig = () => {
-    const errors = {};
-    const participantsCount = selectedTournament?.participants?.length || 0;
-
-    // Validación 1: Jugadores por zona no puede ser mayor a la cantidad de inscriptos
-    if (drawConfig.playersPerZone > participantsCount) {
-      errors.playersPerZone = `No puede ser mayor a ${participantsCount} (total de inscriptos)`;
-    }
-
-    // Validación 2: Clasifican por zona no puede ser mayor a jugadores por zona
-    if (drawConfig.qualifiersPerZone > drawConfig.playersPerZone) {
-      errors.qualifiersPerZone = `No puede ser mayor a ${drawConfig.playersPerZone} (jugadores por zona)`;
-    }
-
-    // Validación adicional: Mínimo de jugadores por zona
-    if (drawConfig.playersPerZone < 2) {
-      errors.playersPerZone = "Mínimo 2 jugadores por zona";
-    }
-
-    setDrawValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  // Función para calcular automáticamente las zonas
-  const calculateNumberOfZones = () => {
-    const participantsCount = selectedTournament?.participants?.length || 0;
-    return participantsCount > 0
-      ? Math.ceil(participantsCount / drawConfig.playersPerZone)
-      : 0;
-  };
-
-  // Función para calcular automáticamente el total de clasificados
-  const calculateTotalQualifiers = () => {
-    return calculateNumberOfZones() * drawConfig.qualifiersPerZone;
-  };
-
   const handleConfirmDelete = async () => {
     try {
       await deleteTournament(selectedTournamentId);
@@ -266,8 +148,6 @@ export const TournamentsList = () => {
   };
 
   useEffect(() => {
-    getCategories().then(setCategories);
-    getLocations().then(setLocations);
     getTournaments().then((data) => {
       setdata(data);
     });
@@ -280,7 +160,6 @@ export const TournamentsList = () => {
 
   // Función para verificar si se debe mostrar el botón Cerrar Inscripciones
   const shouldShowCloseRegistrationsButton = (tournament) => {
-    console.log(tournament);
     // Solo mostrar si pasó la fecha de cierre, está en estado Pending y tiene inscriptos
     return tournament.status === 0 && tournament.participants?.length > 0;
   };
@@ -310,7 +189,12 @@ export const TournamentsList = () => {
     { field: "description", headerName: "Descripción", flex: 2, minWidth: 200 },
     { field: "locationDescription", headerName: "Sede", flex: 1 },
     { field: "categoryDescription", headerName: "Categoría", flex: 1 },
-    { field: "tournamentTypeDescription", headerName: "Tipo", flex: 0.5, minWidth: 100 },
+    {
+      field: "tournamentTypeDescription",
+      headerName: "Tipo",
+      flex: 0.5,
+      minWidth: 100,
+    },
     {
       field: "closeDate",
       headerName: "Cierre",
@@ -390,7 +274,7 @@ export const TournamentsList = () => {
             <IconButton
               color="success"
               size="small"
-              onClick={() => handleGenerateClick(params.row)}
+              onClick={() => handleGenerateClick(params.row.id)}
               sx={{ marginLeft: 1 }}
               title="Generar Draw"
             >
@@ -401,6 +285,25 @@ export const TournamentsList = () => {
 
         return null;
       },
+    },
+    {
+      field: "viewDraw",
+      headerName: "",
+      flex: 1,
+      width: 50,
+      minWidth: 50,
+      maxWidth: 50,
+      renderCell: (params) => (
+        <Tooltip title="Ver Draw">
+          <IconButton
+            color="secondary"
+            size="small"
+            onClick={() => handleViewDraw(params.row.id)}
+          >
+            <SportsTennisIcon />
+          </IconButton>
+        </Tooltip>
+      ),
     },
     {
       field: "delete",
@@ -562,157 +465,6 @@ export const TournamentsList = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Diálogo de generación de draw */}
-      <Dialog
-        open={openGenerateDialog}
-        onClose={handleCancelGenerate}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 3, p: 2 } }}
-        BackdropProps={{
-          sx: {
-            backdropFilter: "blur(6px)",
-            backgroundColor: "rgba(30, 30, 30, 0.5)",
-          },
-        }}
-      >
-        <DialogTitle>Generar Draw del Torneo</DialogTitle>
-        <DialogContent>
-          {selectedTournament && (
-            <Grid container spacing={3} sx={{ mt: 1 }}>
-              <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom>
-                  {selectedTournament.description}
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Typography variant="body1" gutterBottom>
-                  <strong>Cantidad de inscriptos:</strong>{" "}
-                  {selectedTournament.participants?.length || 0}
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={drawConfig.includePlata}
-                      onChange={(e) =>
-                        handleDrawConfigChange("includePlata", e.target.checked)
-                      }
-                      color="primary"
-                    />
-                  }
-                  label="Incluir Copa de Plata"
-                />
-              </Grid>
-
-              <Grid item xs={6}>
-                <FormControl
-                  fullWidth
-                  error={!!drawValidationErrors.playersPerZone}
-                >
-                  <InputLabel>Jugadores por zona</InputLabel>
-                  <Select
-                    value={drawConfig.playersPerZone}
-                    onChange={(e) =>
-                      handleDrawConfigChange("playersPerZone", e.target.value)
-                    }
-                    label="Jugadores por zona"
-                  >
-                    <MenuItem value={2}>2</MenuItem>
-                    <MenuItem value={3}>3</MenuItem>
-                    <MenuItem value={4}>4</MenuItem>
-                    <MenuItem value={5}>5</MenuItem>
-                    <MenuItem value={6}>6</MenuItem>
-                    <MenuItem value={7}>7</MenuItem>
-                    <MenuItem value={8}>8</MenuItem>
-                  </Select>
-                  {drawValidationErrors.playersPerZone && (
-                    <FormHelperText>
-                      {drawValidationErrors.playersPerZone}
-                    </FormHelperText>
-                  )}
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={6}>
-                <FormControl
-                  fullWidth
-                  error={!!drawValidationErrors.qualifiersPerZone}
-                >
-                  <InputLabel>Clasifican por zona</InputLabel>
-                  <Select
-                    value={drawConfig.qualifiersPerZone}
-                    onChange={(e) =>
-                      handleDrawConfigChange(
-                        "qualifiersPerZone",
-                        e.target.value
-                      )
-                    }
-                    label="Clasifican por zona"
-                  >
-                    <MenuItem value={1}>1</MenuItem>
-                    <MenuItem value={2}>2</MenuItem>
-                    <MenuItem value={3}>3</MenuItem>
-                    <MenuItem value={4}>4</MenuItem>
-                  </Select>
-                  {drawValidationErrors.qualifiersPerZone && (
-                    <FormHelperText>
-                      {drawValidationErrors.qualifiersPerZone}
-                    </FormHelperText>
-                  )}
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={6}>
-                <Typography variant="body1" gutterBottom>
-                  <strong>Cantidad de zonas:</strong> {calculateNumberOfZones()}
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  Se calcula automáticamente:{" "}
-                  {selectedTournament?.participants?.length || 0} inscriptos ÷{" "}
-                  {drawConfig.playersPerZone} por zona
-                </Typography>
-              </Grid>
-
-              <Grid item xs={6}>
-                <Typography variant="body1" gutterBottom>
-                  <strong>Total de clasificados:</strong>{" "}
-                  {calculateTotalQualifiers()}
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  Se calcula automáticamente: {calculateNumberOfZones()} zonas ×{" "}
-                  {drawConfig.qualifiersPerZone} por zona
-                </Typography>
-              </Grid>
-
-              {generateError && (
-                <Grid item xs={12}>
-                  <Alert severity="error">{generateError}</Alert>
-                </Grid>
-              )}
-            </Grid>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelGenerate} disabled={generating}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleConfirmGenerate}
-            color="primary"
-            disabled={
-              generating || Object.keys(drawValidationErrors).length > 0
-            }
-            startIcon={generating ? <CircularProgress size={20} /> : null}
-          >
-            {generating ? "Generando..." : "Generar Draw"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Modal de inscripciones */}
       <Dialog
         open={openRegistrationsModal}
@@ -732,7 +484,9 @@ export const TournamentsList = () => {
             <RegistrationsView
               tournamentId={selectedTournamentForRegistrations.id}
               tournamentType={selectedTournamentForRegistrations.tournamentType}
-              tournamentDescription={selectedTournamentForRegistrations.tournamentDescription}
+              tournamentDescription={
+                selectedTournamentForRegistrations.tournamentDescription
+              }
             />
           )}
         </DialogContent>

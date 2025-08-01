@@ -119,7 +119,6 @@ export const UserAdd = () => {
             userId
           );
 
-          console.log("imageUrl", imageUrl);
           // Actualizamos el usuario con la imagen
           await updateUser(userId, { ...user, image: imageUrl });
         }

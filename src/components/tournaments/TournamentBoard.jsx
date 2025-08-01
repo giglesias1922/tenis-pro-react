@@ -5,8 +5,8 @@ import {
 } from "../../services/tournamentsService";
 import CardContent from "@mui/material/CardContent";
 import { useNavigate } from "react-router-dom";
-import { AlertSuccess } from "../Common/AlertSuccess";
-import { createRegistration } from "../../services/registrationsService";
+import { showMessage } from "../Common/AlertMessage";
+import { addParticipant } from "../../services/tournamentsService";
 
 import {
   Grid,
@@ -94,17 +94,18 @@ export const TournamentBoard = () => {
     };
 
     try {
-      var response = await createRegistration(obj);
+      var response = await addParticipant(obj);
 
       if (response.success) {
         setOpenGenerateDialog(false);
 
-        showAlert("Inscripción realizada con éxito.");
+        showMessage("Inscripción registrada ✅", "success");
       } else {
         setError(response.message);
       }
     } catch (error) {
-      console.error("Error al guardar la inscripción:", error);
+      console.error("Error handleConfirmRegistration:", error);
+      showMessage("Ocurrió un error ❌", "error");
     } finally {
       setClosing(false);
     }

@@ -34,6 +34,7 @@ const pages = [
   { id: 8, label: "Parámetros", path: "/parameters", auth: true, parentId: 5 },
   { id: 9, label: "Torneos", path: "/tournaments/board", auth: false }, //menu publico
   { id: 10, label: "Organización", path: "", auth: true },
+  { id: 11, label: "Sedes", path: "/locations", auth: true, parentId: 5 }, //submenu
 ];
 
 const settings = [
@@ -55,18 +56,18 @@ export const HeaderBar = () => {
   const handleCloseNavMenu = () => setAnchorElNav(null);
   const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
-  
+
   const handleOpenSubmenu = (event, parentId) => {
-    setSubmenuAnchors(prev => ({
+    setSubmenuAnchors((prev) => ({
       ...prev,
-      [parentId]: event.currentTarget
+      [parentId]: event.currentTarget,
     }));
   };
-  
+
   const handleCloseSubmenu = (parentId) => {
-    setSubmenuAnchors(prev => ({
+    setSubmenuAnchors((prev) => ({
       ...prev,
-      [parentId]: null
+      [parentId]: null,
     }));
   };
 

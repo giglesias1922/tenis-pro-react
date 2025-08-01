@@ -14,9 +14,9 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import PersonIcon from "@mui/icons-material/Person";
 import {
-  getRegistrations,
-  deleteRegistration,
-} from "../../services/registrationsService";
+  deleteParticipant,
+  getParticipants,
+} from "../../services/tournamentsService.js";
 
 export const RegistrationsView = ({
   tournamentId,
@@ -28,7 +28,7 @@ export const RegistrationsView = ({
   const [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
-    getRegistrations(tournamentId).then((data) => {
+    getParticipants(tournamentId).then((data) => {
       setdata(data);
       console.log(data);
     });
@@ -41,9 +41,9 @@ export const RegistrationsView = ({
 
   const confirmDelete = async () => {
     try {
-      await deleteRegistration(selectedId);
+      await deleteParticipant(tournamentId, selectedId);
 
-      getRegistrations(tournamentId).then((data) => {
+      getParticipants(tournamentId).then((data) => {
         setdata(data);
       });
 

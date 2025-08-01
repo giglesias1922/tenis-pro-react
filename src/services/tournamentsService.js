@@ -7,7 +7,7 @@ const API_URL = `${config.apiUrl}/tournaments`;
 export const getTournaments = async () => {
     try {
       const response = await axiosInstance.get(API_URL);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error("Error en getTournaments:", error);
       throw error;
@@ -17,7 +17,8 @@ export const getTournaments = async () => {
 export const getTournamentTypes = async () => {
     try {
       const response = await axiosInstance.get(`${API_URL}/tournament-types`);
-      return response.data;
+      
+      return response.data.data;
     } catch (error) {
       console.error("Error en getTournamentTypes:", error);
       throw error;
@@ -27,18 +28,27 @@ export const getTournamentTypes = async () => {
 export const getTournamentsBoard = async () => {
   try {
     const response = await axiosInstance.get(`${API_URL}/board`);
-    return response.data;
+    return response.data.data;
   } catch (error) {
     console.error("Error en getTournamentsBoard:", error);
     throw error;
   }
 };
 
+export const getTournamentDraws = async (tournamentId) => {
+  try {
+    const response = await axiosInstance.get(`${API_URL}/${tournamentId}/draw`);
+    return response.data.data; // { mainBracket, silverCupBracket }
+  } catch (error) {
+    console.error("Error en getTournamentDraws:", error);
+    throw error;
+  }
+};
 
 export const getTournamentStatus = async () => {
     try {
       const response = await axiosInstance.get(`${API_URL}/tournament-status`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error("Error en getTournamentStatus:", error);
       throw error;
@@ -48,7 +58,7 @@ export const getTournamentStatus = async () => {
 export const GetTournamentsToProgramming = async () => {
     try {
       const response = await axiosInstance.get(`${API_URL}/to-programming`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error("Error en GetTournamentsToProgramming:", error);
       throw error;
@@ -58,7 +68,7 @@ export const GetTournamentsToProgramming = async () => {
 export const getTournamentsToRegistration = async () => {
     try {
       const response = await axiosInstance.get(`${API_URL}/open-registrations`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error("Error en getTournamentsToRegistration:", error);
       throw error;
@@ -77,7 +87,7 @@ export const deleteTournament = async (id) => {
 export const createTournament = async (data) => {
     try {
       const response = await axiosInstance.post(API_URL, data);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error("Error en createTournament:", error);
       throw error;
@@ -87,18 +97,63 @@ export const createTournament = async (data) => {
 export const getTournamentById = async (id) => {
     try {
       const response = await axiosInstance.get(`${API_URL}/${id}`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error("Error en getTournamentById:", error);
       throw error;
     }
 };
 
+import axios from 'axios';
+
+export const addParticipant = async (tournamentId, participant) => {
+  try {
+    const response = await axiosInstance.post(`${API_URL}/${tournamentId}/participants`,participant);     
+  } catch (error) {
+    console.error('Error al agregar participante:', error.response?.data || error.message);
+  }
+};
+
+export const deleteParticipant = async (tournamentId, participantId) => {
+  try {
+    await axiosInstance.delete(`${API_URL}/${tournamentId}/participants/${participantId}`);
+  } catch (error) {
+    console.error('Error al eliminar participante:', error.response?.data || error.message);
+  }
+};
+
+export const getParticipants = async (tournamentId) => {
+  try {
+    const response = await axios.get(`${API_URL}/${tournamentId}/participants`);
+    return response.data.data; // array de participantes
+  } catch (error) {
+    console.error('Error al obtener participantes:', error);
+    return [];
+  }
+};
+
+export const getParticipantsToRegister = async (categoryId, tournamentId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/${categoryId}/${tournamentId}`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error al obtener usuarios para registrarse:', error);
+    throw error;
+  }
+};
+
+export const getParticipant = async (tournamentId, participantId) => {
+  try {
+    const response = await axios.get(`${API_URL}/${tournamentId}/participants/${participantId}`);
+    return response.data.data; // objeto del participante
+  } catch (error) {
+    console.error('Error al obtener el participante:', error);
+    return null;
+  }
+};
+
 export const updateTournament = async (id, data) => {
     try {
-
-      console.log("di",id);
-      console.log("data",data);
       await axiosInstance.put(`${API_URL}/${id}`, data);
     } catch (error) {
       console.error("Error en updateTournament:", error);
@@ -109,7 +164,7 @@ export const updateTournament = async (id, data) => {
 export const closeRegistrations = async (tournamentId) => {
     try {
       const response = await axiosInstance.post(`${API_URL}/${tournamentId}/close-registrations`);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error("Error en closeRegistrations:", error);
       throw error;
@@ -119,7 +174,7 @@ export const closeRegistrations = async (tournamentId) => {
 export const generateDraw = async (tournamentId, config) => {
     try {
       const response = await axiosInstance.post(`${API_URL}/${tournamentId}/generate-draw`, config);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error("Error en generateDraw:", error);
       throw error;

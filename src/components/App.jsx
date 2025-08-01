@@ -13,6 +13,8 @@ import { UsersList } from "./users/UsersList.jsx";
 import { UserAdd } from "./users/UserAdd.jsx";
 import { CategoriesList } from "./categories/CategoriesList.jsx";
 import { CategoriesAdd } from "./categories/CategoriesAdd.jsx";
+import { LocationsList } from "./locations/LocationsList.jsx";
+import { LocationsAdd } from "./locations/LocationsAdd.jsx";
 import { TournamentsList } from "./tournaments/TournamentsList.jsx";
 import { TournamentsAdd } from "./tournaments/TournamentsAdd.jsx";
 import { RegistrationsAdd } from "./registrations/RegistrationsAdd.jsx";
@@ -22,13 +24,15 @@ import { Login } from "./login/Login.jsx";
 import { Register } from "./login/Register.jsx";
 import { ResetPasswordRequest } from "./login/ResetPasswordRequest.jsx";
 import { ResetPassword } from "./login/ResetPassword.jsx";
-import { AlertSuccess } from "./Common/AlertSuccess.jsx";
+import { AlertMessage } from "./Common/AlertMessage.jsx";
 import { ErrorHandler } from "./Common/ErrorHandler.jsx";
 import { Ranking } from "./ranking/Ranking.jsx";
 import { ParameterList } from "./parameters/ParameterList.jsx";
 import { ParameterAdd } from "./parameters/ParameterAdd.jsx";
 import { TournamentBoard } from "./tournaments/TournamentBoard.jsx";
+import { TournamentDrawGenerator } from "./tournaments/TournamentDrawGenerator.jsx";
 import { deepmerge } from "@mui/utils";
+import { TournamentDrawView } from "./tournaments/TournamentDrawView.jsx";
 
 // Crear el tema base oscuro
 const darkTheme = createTheme({
@@ -52,7 +56,7 @@ const theme = createTheme(
 export const App = () => {
   return (
     <div>
-      <AlertSuccess />
+      <AlertMessage />
       <ErrorHandler />
       <ThemeProvider theme={theme}>
         <CssBaseline />
@@ -65,10 +69,21 @@ export const App = () => {
           <Route path="/categories" element={<CategoriesList />} />
           <Route path="/categories/new" element={<CategoriesAdd />} />
           <Route path="/categories/:id" element={<CategoriesAdd />} />
+          <Route path="/locations" element={<LocationsList />} />
+          <Route path="/locations/new" element={<LocationsAdd />} />
+          <Route path="/locations/:id" element={<LocationsAdd />} />
           <Route path="/tournaments" element={<TournamentsList />} />
           <Route path="/tournaments/new" element={<TournamentsAdd />} />
+          <Route
+            path="/tournaments/:id/generate-draw"
+            element={<TournamentDrawGenerator />}
+          />
           <Route path="/tournaments/:id" element={<TournamentsAdd />} />
           <Route path="/tournaments/board" element={<TournamentBoard />} />
+          <Route
+            path="/tournaments/:id/draw"
+            element={<TournamentDrawView />}
+          />
           <Route path="/registrations" element={<RegistrationsAdd />} />
           <Route path="/matches" element={<MatchesList />} />
           <Route path="/matches/new" element={<MatchesAdd />} />

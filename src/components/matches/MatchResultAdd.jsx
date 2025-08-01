@@ -17,6 +17,7 @@ import {
   Paper,
 } from "@mui/material";
 import { getMatchById, addResult } from "../../services/matchesService";
+import { showMessage } from "../Common/AlertMessage";
 
 export const MatchResultAdd = ({
   matchId,
@@ -50,16 +51,20 @@ export const MatchResultAdd = ({
   };
 
   const validateSet = (a, b) => {
-    a = parseInt(a);
-    b = parseInt(b);
-    if (isNaN(a) || isNaN(b)) return false;
+    // Si alguno no tiene al menos 6, no puede haber set válido
+    if (a < 6 && b < 6) return false;
 
-    const max = Math.max(a, b);
-    const min = Math.min(a, b);
     const diff = Math.abs(a - b);
 
-    if (max === 6 && min <= 4) return true;
-    if (max === 7 && (min === 5 || min === 6)) return true;
+    // No puede haber empate
+    if (a === b) return false;
+
+    // Si uno llegó a 6 y el otro tiene 4 o menos, es válido
+    if ((a === 6 && b <= 4) || (b === 6 && a <= 4)) return true;
+
+    // Si uno tiene 7 y el otro 5 o 6 (tie-break), también es válido
+    if ((a === 7 && (b === 5 || b === 6)) || (b === 7 && (a === 5 || a === 6)))
+      return true;
 
     return false;
   };
@@ -70,17 +75,20 @@ export const MatchResultAdd = ({
       return null;
     }
 
-    const wins = { [match.registrationAId]: 0, [match.registrationBId]: 0 };
+    const wins = { [match.participant1Id]: 0, [match.participant2Id]: 0 };
+
+    const newErrors = { general: "", sets: ["", "", ""] };
 
     for (let i = 0; i < sets.length; i++) {
       const set = sets[i];
       const a = parseInt(set.playerA_games);
       const b = parseInt(set.playerB_games);
-      const newErrors = { general: "", sets: ["", "", ""] };
 
       if (isNaN(a) || isNaN(b)) continue;
 
-      if (!validateSet(a, b)) {
+      var resul = validateSet(a, b);
+
+      if (!resul) {
         newErrors.general = `Los games del jugador A y B del set ${
           i + 1
         } son incorrectos`;
@@ -90,19 +98,19 @@ export const MatchResultAdd = ({
       }
 
       if (a > b) {
-        wins[match.registrationAId]++;
-        sets[i].winnerSet = match.registrationAId;
+        wins[match.participant1Id]++;
+        sets[i].winnerSet = match.participant1Id;
       } else {
-        wins[match.registrationBId]++;
-        sets[i].winnerSet = match.registrationBId;
+        wins[match.participant2Id]++;
+        sets[i].winnerSet = match.participant2Id;
       }
     }
 
     const winnerId =
-      wins[match.registrationAId] > wins[match.registrationBId]
-        ? match.registrationAId
-        : wins[match.registrationBId] > wins[match.registrationAId]
-        ? match.registrationBId
+      wins[match.participant1Id] > wins[match.participant2Id]
+        ? match.participant1Id
+        : wins[match.participant2Id] > wins[match.participant1Id]
+        ? match.participant2Id
         : null;
 
     if (!winnerId || wins[winnerId] < 2) {
@@ -134,8 +142,15 @@ export const MatchResultAdd = ({
         winnerSet: s.winnerSet,
       })),
     };
+    try {
+      await addResult(matchId, result);
 
-    await addResult(matchId, result);
+      showMessage("Resultado guardado con éxito ✅", "success");
+      navigate("/matches");
+    } catch (error) {
+      console.error("Error al guardar resultado:", error);
+      showMessage("Ocurrió un error ❌", "error");
+    }
   };
 
   if (!match) return <Typography>Cargando partido...</Typography>;
