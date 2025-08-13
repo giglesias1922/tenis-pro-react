@@ -176,7 +176,6 @@ export const TournamentsAdd = () => {
         locationId: formData.locationId,
         categoryId: formData.categoryId,
         tournamentType: formData.tournamentType,
-        status: isEdit ? Status : 0,
         image: formData.image || "",
       };
 

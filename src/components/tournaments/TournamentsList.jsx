@@ -80,7 +80,9 @@ export const TournamentsList = () => {
   };
 
   const handleViewDraw = (tournamentId) => {
-    navigate(`/tournaments/${tournamentId}/draw`);
+    
+    // navigate(`/tournaments/${tournamentId}/draw`);
+    navigate(`/tournaments/${tournamentId}/zone-draw`);
   };
 
   const handleCloseRegistrationsClick = (tournament) => {
@@ -152,6 +154,11 @@ export const TournamentsList = () => {
       setdata(data);
     });
   }, []);
+
+  // Función para verificar si se debe mostrar el botón Generar Draw
+  const shouldShowGenerateDrawButton = (tournament) => {
+    return tournament.status === 2 && tournament.participants?.length > 0;
+  };
 
   // Función para verificar si se debe mostrar el botón Generar
   const shouldShowGenerateButton = (tournament) => {
@@ -251,10 +258,7 @@ export const TournamentsList = () => {
       maxWidth: 70,
       renderCell: (params) => {
         // Mostrar botón "Cerrar Inscripciones" si status = 0 y pasó la fecha de cierre
-        if (
-          params.row.status === 0 &&
-          shouldShowCloseRegistrationsButton(params.row)
-        ) {
+        if (shouldShowCloseRegistrationsButton(params.row)) {
           return (
             <IconButton
               color="warning"
@@ -269,7 +273,7 @@ export const TournamentsList = () => {
         }
 
         // Mostrar botón "Generar Draw" si status = 1 y la fecha de inicio es futura
-        if (params.row.status === 1 && shouldShowGenerateButton(params.row)) {
+        if (shouldShowGenerateButton(params.row)) {
           return (
             <IconButton
               color="success"
@@ -283,27 +287,21 @@ export const TournamentsList = () => {
           );
         }
 
+        if (shouldShowGenerateDrawButton(params.row))
+          return (
+            <Tooltip title="Ver Draw">
+              <IconButton
+                color="secondary"
+                size="small"
+                onClick={() => handleViewDraw(params.row.id)}
+              >
+                <SportsTennisIcon />
+              </IconButton>
+            </Tooltip>
+          );
+
         return null;
       },
-    },
-    {
-      field: "viewDraw",
-      headerName: "",
-      flex: 1,
-      width: 50,
-      minWidth: 50,
-      maxWidth: 50,
-      renderCell: (params) => (
-        <Tooltip title="Ver Draw">
-          <IconButton
-            color="secondary"
-            size="small"
-            onClick={() => handleViewDraw(params.row.id)}
-          >
-            <SportsTennisIcon />
-          </IconButton>
-        </Tooltip>
-      ),
     },
     {
       field: "delete",

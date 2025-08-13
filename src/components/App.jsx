@@ -33,6 +33,7 @@ import { TournamentBoard } from "./tournaments/TournamentBoard.jsx";
 import { TournamentDrawGenerator } from "./tournaments/TournamentDrawGenerator.jsx";
 import { deepmerge } from "@mui/utils";
 import { TournamentDrawView } from "./tournaments/TournamentDrawView.jsx";
+import { TournamentDrawZonesView } from "./tournaments/TournamentDrawZonesView.jsx";
 
 // Crear el tema base oscuro
 const darkTheme = createTheme({
@@ -83,6 +84,10 @@ export const App = () => {
           <Route
             path="/tournaments/:id/draw"
             element={<TournamentDrawView />}
+          />
+          <Route
+            path="/tournaments/:id/zone-draw"
+            element={<TournamentDrawZonesView />}
           />
           <Route path="/registrations" element={<RegistrationsAdd />} />
           <Route path="/matches" element={<MatchesList />} />

@@ -146,7 +146,9 @@ export const MatchResultAdd = ({
       await addResult(matchId, result);
 
       showMessage("Resultado guardado con éxito ✅", "success");
-      navigate("/matches");
+      
+      onGridReload();       // refresca tabla padre
+      onModalResultClose();
     } catch (error) {
       console.error("Error al guardar resultado:", error);
       showMessage("Ocurrió un error ❌", "error");

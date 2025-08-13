@@ -104,7 +104,18 @@ export const getTournamentById = async (id) => {
     }
 };
 
-import axios from 'axios';
+export const getZonesDraw = async (id) => {
+  
+  try {
+    const response = await axiosInstance.get(`${API_URL}/${id}/zone-draw`);
+    console.log("data", response.data.data);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error en getZonesDraw:", error);
+    throw error;
+  }
+};
+
 
 export const addParticipant = async (tournamentId, participant) => {
   try {
@@ -174,6 +185,7 @@ export const closeRegistrations = async (tournamentId) => {
 export const generateDraw = async (tournamentId, config) => {
     try {
       const response = await axiosInstance.post(`${API_URL}/${tournamentId}/generate-draw`, config);
+      
       return response.data.data;
     } catch (error) {
       console.error("Error en generateDraw:", error);

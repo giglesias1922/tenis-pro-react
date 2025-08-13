@@ -73,7 +73,7 @@ export const updateMatch = async (id, data) => {
     }
 };
 
-export const addResult = async (id, data) => {
+export const addResult = async (id, data) => {  
     try {
       await axiosInstance.put(`${API_URL}/${id}/result`, data);
     } catch (error) {
