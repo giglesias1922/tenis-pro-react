@@ -5,8 +5,14 @@ import axiosInstance from './axiosConfig';
 const API_URL = `${config.apiUrl}/tournaments`;
 
 export const getTournaments = async () => {
-    try {
+    try {      
       const response = await axiosInstance.get(API_URL);
+
+      console.log("API_URL",API_URL)
+      console.log("response.data",response.data)
+      console.log("response.data.data",response.data.data)
+
+
       return response.data.data;
     } catch (error) {
       console.error("Error en getTournaments:", error);
